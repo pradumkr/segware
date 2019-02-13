@@ -1,8 +1,8 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 """
-Created on Tue Feb 12 11:00:15 2019
-@author: swati
+Created on Tue Feb 12 18:05:15 2019
+@author: Purnima
 """
 
 from PyQt5 import QtGui
