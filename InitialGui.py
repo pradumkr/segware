@@ -1,27 +1,16 @@
-#!/usr/bin/env python2
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Feb 12 18:05:15 2019
-@author: Purnima
-"""
-
 from PyQt5 import QtGui
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QMainWindow,QWidget, QAction, QMessageBox, QPushButton
 import sys
-
-
+app = QApplication(sys.argv)
+screen = app.primaryScreen()
+size = screen.size()
 class Window(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.title = "QMenuBar"
-        self.top = 100
-        self.left = 100
-        self.width = 680
-        self.height = 500
+        self.title = "Application_name"
         self.setWindowIcon(QtGui.QIcon("icon.png"))
-
         self.InitWindow()
 
 
@@ -103,7 +92,7 @@ class Window(QMainWindow):
         button4.setToolTip("This will ")
 
         self.setWindowTitle(self.title)
-        self.setGeometry(self.top, self.left, self.width, self.height)
+        self.setGeometry(0,0,size.width(), size.height())#top,left,width,height
         self.show()
 
     def CloseApp(self):
@@ -133,4 +122,4 @@ class Window(QMainWindow):
 
 App = QApplication(sys.argv)
 window = Window()
-sys.exit(App.exec())
+sys.exit(App.exec_())
