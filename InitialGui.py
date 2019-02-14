@@ -5,14 +5,15 @@ import sys
 app = QApplication(sys.argv)
 screen = app.primaryScreen()
 size = screen.size()
+w=size.width()
+h=size.height()
 class Window(QMainWindow):
     def __init__(self):
         super().__init__()
-
         self.title = "Application_name"
         self.setWindowIcon(QtGui.QIcon("icon.png"))
         self.InitWindow()
-
+   
 
     def InitWindow(self):
 
@@ -67,38 +68,32 @@ class Window(QMainWindow):
         helpMenu.addAction(tutorialButton)
         
         button1 =QPushButton("T1",self)
-        button1.move(50,100)
+        button1.move(w/25,h/10)
         button1.setToolTip("T1 ")
 
         button2 =QPushButton("T2",self)
-        button2.move(50,150)
+        button2.move(w/25,2*h/10)
         button2.setToolTip("T2 ")
 
         button3 =QPushButton("TC",self)
-        button3.move(50,200)
+        button3.move(w/25,3*h/10)
         button3.setToolTip("This will ")
         
         button4 =QPushButton("F",self)
-        button4.move(50,250)
+        button4.move(w/25,4*h/10)
         button4.setToolTip("This will ")
 
-        button = QPushButton("close",self)
-        button.move(50,350)
-        button.setToolTip("This will close")
-        button.clicked.connect(self.close)
-
-        button4 =QPushButton("Segment",self)
-        button4.move(50,300)
-        button4.setToolTip("This will ")
+        button5 =QPushButton("Segment",self)
+        button5.move(w/25,5*h/10)
+        button5.setToolTip("This will ")
 
         self.setWindowTitle(self.title)
-        self.setGeometry(0,0,size.width(), size.height())#top,left,width,height
+        self.setGeometry(0,0,w,h)#top,left,width,height
         self.show()
 
     def CloseApp(self):
         reply = QMessageBox.question(self, "Close Message", "Are You Sure To Close Window",
                                      QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
-
         if reply == QMessageBox.Yes:
             self.close()
             
