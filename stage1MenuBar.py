@@ -7,7 +7,7 @@ Created on Tue Feb 12 11:00:15 2019
 
 from PyQt5 import QtGui
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QApplication, QMainWindow,QWidget, QAction, QMessageBox
+from PyQt5.QtWidgets import QApplication, QMainWindow,QWidget, QAction, QMessageBox, QFileDialog, QGridLayout, QTextEdit, QPushButton
 import sys
 
 
@@ -26,7 +26,10 @@ class Window(QMainWindow):
 
 
     def InitWindow(self):
-
+        
+        self.widget = EmailBlast(parent=self)
+        self.setCentralWidget(self.widget)
+        
         mainMenu = self.menuBar()
         fileMenu = mainMenu.addMenu("File")
         helpMenu = mainMenu.addMenu("Help")
@@ -91,22 +94,50 @@ class Window(QMainWindow):
             
     def OpenMRI(self):
         print("In open")
+        fileName, _ = QFileDialog.getOpenFileName(self,"QFileDialog.getOpenFileName()", "","All Files (*);;NIfTI -1 (*.nii;*.nii.gz;*.mha)")
+        if fileName:
+            print(fileName)
         
     def OpenLastMRI(self):
         print("In open last MRI")
         
+        
     def OpenRecentMRI(self):
         print("In open recent MRI")
 
+    def SaveSegmentedMRI(self):
+        print("In SaveSegmentedMRI") 
+        fileName, _ = QFileDialog.getSaveFileName(self,"QFileDialog.getSaveFileName()","","All Files (*);;NIfTI -1 (*.nii;*.nii.gz;*.mha);;NumPy array(*.npy;*.npz);;Images JPEG(*.jpg,*.png,*.jpeg)")
+        if fileName:
+            print(fileName)
+
     def SaveMask(self):
         print("In save mask")
+        fileName, _ = QFileDialog.getSaveFileName(self,"QFileDialog.getSaveFileName()","","All Files (*);;NIfTI -1 (*.nii;*.nii.gz;*.mha);;NumPy array(*.npy;*.npz);;Images JPEG(*.jpg,*.png,*.jpeg)")
+        if fileName:
+            print(fileName)
         
     def AboutSoftware(self):
-        print("In AboutSoftware")    
+        print("In AboutSoftware")  
         
-    def SaveSegmentedMRI(self):
-        print("In SaveSegmentedMRI")   
+class EmailBlast(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        # create and set layout to place widgets
+        grid_layout = QGridLayout(self)
 
+        self.text_box = QTextEdit(self)
+        self.save_button = QPushButton('Save')
+        self.clear_button = QPushButton('Clear')
+        self.open_button = QPushButton('Open')
+        # add widgets to layout. Params are:
+        # (widget, fromRow, fromColumn, rowSpan=1, columnSpan=1)
+        grid_layout.addWidget(self.text_box, 0, 0, 1, 3)
+        grid_layout.addWidget(self.save_button, 1, 0)
+        grid_layout.addWidget(self.clear_button, 1, 1)
+        grid_layout.addWidget(self.open_button, 1, 2)
+
+        
 App = QApplication(sys.argv)
 window = Window()
 sys.exit(App.exec())
