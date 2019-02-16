@@ -1,15 +1,20 @@
 import sys
 from PyQt5 import QtGui
-from PyQt5.QtWidgets import QMainWindow,QApplication,QDialog,QMessageBox,QVBoxLayout,QHBoxLayout,QGroupBox,QPushButton,QWidget
-from PyQt5.QtCore import QCoreApplication
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
+from PyQt5.QtCore import QCoreApplication, QRect, Qt
 
 app = QApplication(sys.argv)
 screen = app.primaryScreen()
 size = screen.size()
 
-class Window(QDialog):    
+class Window(QScrollArea):  
     def __init__(self):
         super().__init__()
+        
+        self.container = QFrame(self)
+        self.container.resize(size.width(),size.height())
+
         self.title="PyQt5 layout"
         self.InitUI()
 
@@ -21,7 +26,7 @@ class Window(QDialog):
         
         self.VerticalLayout2()
         
-        hBox=QHBoxLayout()
+        hBox=QHBoxLayout(self.container)
         hBox.addWidget(self.groupbox1)
         hBox.addWidget(self.groupbox2)
         self.setLayout(hBox)
@@ -49,12 +54,12 @@ class Window(QDialog):
 
         self.groupbox1.setLayout(vBoxLayout)
 
-
     def VerticalLayout2(self):
         self.groupbox2 =QGroupBox("part2")
         vBoxLayout =QVBoxLayout()
         hBoxLayout=QHBoxLayout()
         self.groupbox2.setLayout(vBoxLayout)
+        self.setWidget(self.container)
 
 App = QApplication(sys.argv)
 window = Window()
