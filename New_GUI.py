@@ -4,8 +4,16 @@ from PyQt5 import QtWidgets
 from PyQt5 import QtGui
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
-from PyQt5.QtCore import QCoreApplication, QRect, Qt
+from PyQt5.QtCore import *
 
+import pyqtgraph as pg
+import numpy as np
+
+from pyqtgraph.Qt import QtCore, QtGui
+from medpy.io import load
+
+
+#screen size determine 
 App = QApplication(sys.argv)
 screen = App.primaryScreen()
 size = screen.size()
@@ -14,7 +22,10 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.window_widget = window(parent=self)
-        self.setGeometry(0,0,size.width(), size.height()/2)#top,left,width,height
+        #set minimum window size
+        self.setMinimumSize(QSize(600,400))
+
+        self.setGeometry(0,0,9*size.width()/10, size.height()/2)#top,left,width,height
 
         self.setCentralWidget(self.window_widget)
         # filling up a menu bar
@@ -140,19 +151,19 @@ class window(QScrollArea):
         self.vBoxLayout.addWidget(button)
         button.clicked.connect(self.CloseApp)
     
-        #add buttonfor part 2        
-        button=QPushButton("A",self)
-        self.vBoxLayout2.addWidget(button)
+        #add buttonfor part 2
+        
+        self.pgcustom = imagePlot() # class abstract both the classes
+        self.vBoxLayout2.addWidget(self.pgcustom.win)
 
         #add for part 3
-        button=QPushButton("1",self)
-        self.vBoxLayout3.addWidget(button)
+        self.pgcustom1 = imagePlot1() # class abstract both the classes
+        self.vBoxLayout3.addWidget(self.pgcustom1.win)
 
         #add for part 4
         
-        button=QPushButton("c",self)
-        self.vBoxLayout4.addWidget(button)
-
+        self.pgcustom2 = imagePlot2() # class abstract both the classes
+        self.vBoxLayout4.addWidget(self.pgcustom2.win)
 
         #set layout position
         self.groupbox1.setLayout(self.vBoxLayout)
@@ -163,12 +174,14 @@ class window(QScrollArea):
         self.groupbox4.setLayout(self.vBoxLayout4)
                 
         self.setWidget(self.container)
+        
         self.show()
 
     def func(self):
-        self.container.resize(size.width(),size.height())
+        self.container.resize(size.width(),9*size.height()/10)
         self.vBoxLayout.addWidget(self.groupbox3)
         self.vBoxLayout2.addWidget(self.groupbox4)
+
     def CloseApp(self):
         reply = QMessageBox.question(self, "Close Message", "Are You Sure To Close Window",
                                          QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
@@ -178,7 +191,119 @@ class window(QScrollArea):
     
 #"""
     
+class CustomPlot(pg.PlotWidget):
+    def __init__(self):
+        pg.PlotWidget.__init__(self)
+        self.x = np.random.normal(size=1000) * 1e-5
+        self.y = self.x * 500 + 0.005 * np.random.normal(size=1000)
+        self.y -= self.y.min() - 1.0
+        self.mask = self.x > 1e-15
+        self.x = self.x[self.mask]
+        self.y = self.y[self.mask]
+        self.plot(self.x, self.y, pen='g', symbol='o', symbolPen='g', symbolSize=1)
 
+class imagePlot(pg.ImageView):
+    dp_input, image_header = load('DP_preprocessed.nii.gz')
+    data = np.asarray(dp_input)
+
+    # Interpret image data as row-major instead of col-major
+    pg.setConfigOptions(imageAxisOrder='col-major')
+
+    app = QtGui.QApplication([])
+    
+    # Create window with ImageView widget
+    win = QtGui.QMainWindow()
+    imv = pg.ImageView()
+    win.setCentralWidget(imv)
+    win.show()
+    
+    win.setWindowTitle('pyqtgraph example: ImageView')
+
+    ## Display the data and assign each frame a time value from 1.0 to 3.0
+    imv.setImage(data, xvals=np.linspace(1, 144, data.shape[0], dtype = 'int32'))
+    ## Set a custom color map
+    colors = [
+        (0, 0, 0),
+        (45, 5, 61),
+        (84, 42, 55),
+        (150, 87, 60),
+        (208, 171, 141),
+        (255, 255, 255)
+    ]
+    cmap = pg.ColorMap(pos=np.linspace(0.0, 1.0, 6), color=colors)
+    imv.setColorMap(cmap)
+    imv.setCurrentIndex(72)
+    imv.ui.roiBtn.hide()
+    imv.ui.menuBtn.hide()
+
+
+class imagePlot1(pg.ImageView):
+    dp_input, image_header = load('DP_preprocessed.nii.gz')
+    data = np.asarray(dp_input)
+
+    # Interpret image data as row-major instead of col-major
+    pg.setConfigOptions(imageAxisOrder='col-major')
+
+    app = QtGui.QApplication([])
+    
+    # Create window with ImageView widget
+    win = QtGui.QMainWindow()
+    imv = pg.ImageView()
+    win.setCentralWidget(imv)
+    win.show()
+    
+    win.setWindowTitle('pyqtgraph example: ImageView')
+
+    ## Display the data and assign each frame a time value from 1.0 to 3.0
+    imv.setImage(data, xvals=np.linspace(1, 144, data.shape[0], dtype = 'int32'))
+    ## Set a custom color map
+    colors = [
+        (0, 0, 0),
+        (45, 5, 61),
+        (84, 42, 55),
+        (150, 87, 60),
+        (208, 171, 141),
+        (255, 255, 255)
+    ]
+    cmap = pg.ColorMap(pos=np.linspace(0.0, 1.0, 6), color=colors)
+    imv.setColorMap(cmap)
+    imv.setCurrentIndex(72)
+    imv.ui.roiBtn.hide()
+    imv.ui.menuBtn.hide()
+
+class imagePlot2(pg.ImageView):
+    dp_input, image_header = load('DP_preprocessed.nii.gz')
+    data = np.asarray(dp_input)
+
+    # Interpret image data as row-major instead of col-major
+    pg.setConfigOptions(imageAxisOrder='col-major')
+
+    app = QtGui.QApplication([])
+    
+    # Create window with ImageView widget
+    win = QtGui.QMainWindow()
+    imv = pg.ImageView()
+    win.setCentralWidget(imv)
+    win.show()
+    
+    win.setWindowTitle('pyqtgraph example: ImageView')
+
+    ## Display the data and assign each frame a time value from 1.0 to 3.0
+    imv.setImage(data, xvals=np.linspace(1, 144, data.shape[0], dtype = 'int32'))
+    ## Set a custom color map
+    colors = [
+        (0, 0, 0),
+        (45, 5, 61),
+        (84, 42, 55),
+        (150, 87, 60),
+        (208, 171, 141),
+        (255, 255, 255)
+    ]
+    cmap = pg.ColorMap(pos=np.linspace(0.0, 1.0, 6), color=colors)
+    imv.setColorMap(cmap)
+    imv.setCurrentIndex(72)
+    imv.ui.roiBtn.hide()
+    imv.ui.menuBtn.hide()
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
