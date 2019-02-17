@@ -21,19 +21,125 @@ import qtawesome as qta
 from pyqtgraph.Qt import QtCore
 from medpy.io import load
 
+class PopUpDLG(QtGui.QDialog):
+    def __init__(self):
+        super(PopUpDLG, self).__init__()
+        self.setObjectName("self")
+        self.title = "Segware"
+        self.top = 300
+        self.left = 300
+        self.width = 300
+        self.height = 400
+        self.setWindowIcon(QtGui.QIcon("images/saveSegmentedMRI.jpg"))
+        self.setWindowTitle(self.title)
+        self.setGeometry(self.top, self.left, self.width, self.height)
+        self.files = {
+                'T1': None,
+                'T2': None,
+                'T1c': None,
+                'F': None,
+                }
+        
+        self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
+#        icon = QtGui.QIcon()
+#        icon.addPixmap(QtGui.QPixmap("Icons/Plus-32.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+#        self.setWindowIcon(icon)
+        self.gridLayout = QGridLayout(self)
+        self.gridLayout.setObjectName("gridLayout")
+        
+        fa5_icon = self.style().standardIcon(getattr(QStyle, 'SP_FileDialogNewFolder'))
+        self.T1 = QPushButton(fa5_icon, "select T1",self)
+        self.T1.clicked.connect(self.get_t1)
+        self.t1_Label = QLabel(self.files['T1'])
+        
+        self.T2 = QPushButton(fa5_icon, "select T2",self)
+        self.T2.clicked.connect(self.get_t2)
+        self.t2_Label = QLabel(self.files['T2'])
+        
+        self.T1c = QPushButton(fa5_icon, "select T1c",self)
+        self.T1c.clicked.connect(self.get_t1c)
+        self.t1c_Label = QLabel(self.files['T1c'])
+        
+        self.F = QPushButton(fa5_icon, "select Flair",self)
+        self.F.clicked.connect(self.get_f)
+        self.f_Label = QLabel(self.files['F'])
+        
+        self.gridLayout.addWidget(self.T1, 0,0,1,2)
+        self.gridLayout.addWidget(self.t1_Label,1,0,1,2)
+        
+        self.gridLayout.addWidget(self.T2, 2,0,1,2)
+        self.gridLayout.addWidget(self.t2_Label,3,0,1,2)
+        
+        self.gridLayout.addWidget(self.T1c, 4,0,1,2)
+        self.gridLayout.addWidget(self.t1c_Label,5,0,1,2)
+        
+        self.gridLayout.addWidget(self.F, 6,0,1,2)
+        self.gridLayout.addWidget(self.f_Label,7,0,1,2)
+        
+        self.add_link = QtGui.QPushButton("Save",self)
+        self.gridLayout.addWidget(self.add_link, 8, 0, 1, 1)
+        
+        self.cancel_link = QtGui.QPushButton("Cancel",self)
+        self.gridLayout.addWidget(self.cancel_link,8, 1, 1, 1)
+#        self.retranslateUi(self)
+        self.cancel_link.clicked.connect(self.reject)
+        self.add_link.clicked.connect(self.get_link)
+        self.retrunVal = None
 
+    def retranslateUi(self, Dialog):
+        _translate = QtCore.QCoreApplication.translate
+        self.setWindowTitle(_translate("Dialog", "Add link"))
+        self.add_link.setText(_translate("Dialog", "Add"))
+        self.cancel_link.setText(_translate("Dialog", "Cancel"))
+
+    def get_t1(self):
+        fileName, _ = QFileDialog.getOpenFileName(self,"QFileDialog.getOpenFileName()", "","All Files (*);;NIfTI -1 (*.nii;*.nii.gz;*.mha)")
+        if fileName:
+            print(fileName)
+            self.files['T1']= fileName
+            self.t1_Label.setText(fileName)
+            
+    def get_t2(self):
+        fileName, _ = QFileDialog.getOpenFileName(self,"QFileDialog.getOpenFileName()", "","All Files (*);;NIfTI -1 (*.nii;*.nii.gz;*.mha)")
+        if fileName:
+            print(fileName)
+            self.files['T2']= fileName
+            self.t2_Label.setText(fileName)
+            
+    def get_t1c(self):
+        fileName, _ = QFileDialog.getOpenFileName(self,"QFileDialog.getOpenFileName()", "","All Files (*);;NIfTI -1 (*.nii;*.nii.gz;*.mha)")
+        if fileName:
+            print(fileName)
+            self.files['T1c']= fileName
+            self.t1c_Label.setText(fileName)
+            
+    def get_f(self):
+        fileName, _ = QFileDialog.getOpenFileName(self,"QFileDialog.getOpenFileName()", "","All Files (*);;NIfTI -1 (*.nii;*.nii.gz;*.mha)")
+        if fileName:
+            print(fileName)
+            self.files['F']= fileName
+            self.f_Label.setText(fileName)
+            
+    def get_link(self):
+        self.retrunVal = self.files
+        self.accept()
+
+    def exec_(self):
+        super(PopUpDLG, self).exec_()
+        return self.retrunVal
+        
+        
 class Window(QMainWindow):
     MaxRecentFiles = 5
-        
     def __init__(self):
         super().__init__()
         
         self.recentFileActs = []
-        self.title = "QMenuBar"
+        self.title = "Segware"
         self.top = 200
         self.left = 200
         self.width = 800
-        self.height = 800
+        self.height = 400
         self.setWindowIcon(QtGui.QIcon("images/saveSegmentedMRI.jpg"))
         self.widget = Layout(parent=self)
         self.setCentralWidget(self.widget)
@@ -44,6 +150,7 @@ class Window(QMainWindow):
         self.setWindowTitle(self.title)
         self.setGeometry(self.top, self.left, self.width, self.height)
         self.show()
+        self.files = None
 
     def createActions(self):
         self.openAct = QAction(QIcon("Images/open.png"), 'Open', self, shortcut="Ctrl+O", statusTip="Open MRI (.nii, .nii.gz, .mha)", triggered=self.OpenMRI)
@@ -93,10 +200,12 @@ class Window(QMainWindow):
             
     def OpenMRI(self):
         print("In open")
-        fileName, _ = QFileDialog.getOpenFileName(self,"QFileDialog.getOpenFileName()", "","All Files (*);;NIfTI -1 (*.nii;*.nii.gz;*.mha)")
-        if fileName:
-            print(fileName)
-            self.loadFile(fileName)
+        dialog = PopUpDLG()
+        value = dialog.exec_()
+        if value:
+            print(value)
+            self.files = value
+            self.widget.createMRIView(self.files['T1'])
         
     def OpenLastMRI(self):
         print("In open last MRI")
@@ -187,22 +296,27 @@ class Window(QMainWindow):
 
     def strippedName(self, fullFileName):
         return QFileInfo(fullFileName).fileName()
+    
         
 class Layout(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
-        grid = QGridLayout()
-        self.pgcustom1 = imagePlot(fileName = 'DP_preprocessed.nii.gz')
+        self.grid = QGridLayout()
+        self.pgcustom1 = None;
         self.pgcustom2 = imagePlot(fileName = 'DP_preprocessed.nii.gz')
         self.pgcustom3 = imagePlot(fileName = 'DP_preprocessed.nii.gz')
         self.controlLayout = self.createControlLayout()
-        self.mriView = self.createMRIView()
-        self.maskView = self.createMaskView()
-        self.segmentedView = self.createSegmentedView()
-        grid.addWidget(self.controlLayout, 0, 0)
-        grid.addWidget(self.mriView, 0, 1)
-        grid.addWidget(self.maskView, 1, 0)
-        grid.addWidget(self.segmentedView, 1, 1)
+#        self.mriView = self.createMRIView()
+        self.no_preview = QLabel("No preview Available")
+        self.no_preview.setAlignment(Qt.AlignCenter)
+        self.mriView = None
+        self.maskView = None
+        self.segmentedView = None
+        self.grid.addWidget(self.controlLayout, 0, 0)
+        if self.mriView:
+            self.grid.addWidget(self.mriView, 0, 1)
+        else:
+            self.grid.addWidget(self.no_preview, 0, 1)
         
 #        self.maskView.setHidden(True)
 #        self.segmentedView.setHidden(True)
@@ -211,13 +325,18 @@ class Layout(QWidget):
         scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         scroll.setWidgetResizable(False)
-        scroll.setLayout(grid)
+        scroll.setLayout(self.grid)
         
         vLayout = QVBoxLayout(self)
         vLayout.addWidget(scroll)
         self.setLayout(vLayout)
         
 #        self.setLayout(grid)
+    def segment(self):
+        self.maskView = self.createMaskView()
+        self.segmentedView = self.createSegmentedView()
+        self.grid.addWidget(self.maskView, 1, 0)
+        self.grid.addWidget(self.segmentedView, 1, 1)
         
     def toggleResultView(self):
         self.maskView.setHidden(not self.maskView.isHidden())
@@ -225,7 +344,7 @@ class Layout(QWidget):
         
     def createControlLayout(self):
         groupBox = QGroupBox("Controls")
-        vBoxLayout = QVBoxLayout()        
+        vBoxLayout = QVBoxLayout()
         hboxModality = QHBoxLayout()
         modalityLabel = QLabel("Choose Modality:")
         hboxModality.addWidget(modalityLabel)
@@ -256,7 +375,6 @@ class Layout(QWidget):
         comboBox.addItem("White Matter (WM)")
         comboBox.activated[str].connect(self.style_choice)
         hbox.addWidget(comboBox)
-        
         vBoxLayout.addLayout(hbox)
         
         self.slider = QSlider(Qt.Horizontal)
@@ -269,7 +387,7 @@ class Layout(QWidget):
 #        vBoxLayout.addWidget(self.slider)
         
         self.nameLabel = QLabel("Current Slice : ")
-        self.nameLabel.setMaximumHeight(20)
+        self.nameLabel.setMaximumHeight(10)
         vBoxLayout.addWidget(self.nameLabel)
         
         self.slice_box = QSpinBox()
@@ -278,11 +396,12 @@ class Layout(QWidget):
         slider_layout = QGridLayout()
         slider_layout.addWidget(self.slider, 0,0,1,5);
         slider_layout.addWidget(self.slice_box,0,5,1,1);
-        d1 = QPushButton("Transverse",self)
+        fa5_icon = qta.icon('fa5.paper-plane')
+        d1 = QPushButton(fa5_icon, "Transverse",self)
         d1.clicked.connect(self.transverse_view)
-        d2 = QPushButton("Saggital",self)
+        d2 = QPushButton(fa5_icon, "Saggital",self)
         d2.clicked.connect(self.saggital_view)
-        d3 = QPushButton("Coronal",self)
+        d3 = QPushButton(fa5_icon, "Coronal",self)
         d3.clicked.connect(self.coronal_view)
         slider_layout.addWidget(d1, 1,0,1,2)
         slider_layout.addWidget(d2, 1,2,1,2)
@@ -290,6 +409,7 @@ class Layout(QWidget):
         vBoxLayout.addLayout(slider_layout)
 
         groupBox.setLayout(vBoxLayout)
+        groupBox.setMinimumSize(300,300)
 
         return groupBox
     
@@ -333,15 +453,19 @@ class Layout(QWidget):
         self.pgcustom2.setIndex(self.slider.value())
         self.pgcustom3.setIndex(self.slider.value())
     
-    def createMRIView(self):
+    def createMRIView(self, fileName):
         groupBox = QGroupBox("MRI View")
+        print(fileName)
+        self.pgcustom1 = imagePlot(fileName = fileName)
         vBoxLayout = QVBoxLayout()
         vBoxLayout.addWidget(self.pgcustom1.imv)
         saveBtn = QPushButton("Save",self)
         vBoxLayout.addWidget(saveBtn)
 #        vBoxLayout.addStretch(1)
         groupBox.setLayout(vBoxLayout)
-        return groupBox
+        self.mriView = groupBox
+        self.grid.addWidget(self.mriView, 0, 1)
+        
     
     def createMaskView(self):
         groupBox = QGroupBox("Mask View")
@@ -368,42 +492,47 @@ class Layout(QWidget):
     
     def style_choice(self, text):
         print(text)
-    
+        self.segment()
+        self.setMinimumSize(800,800)
+
+        
+        
 class imagePlot(pg.ImageView):
     
     def __init__(self, fileName):
-        dp_input, image_header = load(fileName)
-        self.data = np.asarray(dp_input)
-    
-        # Interpret image data as row-major instead of col-major
-        pg.setConfigOptions(imageAxisOrder='col-major')
-        self.imv = pg.ImageView()
-#        self.imv.view.setBackgroundColor('#f0f0f0')
-        self.imv.timeLine.setPen('y', width=10)
-        self.imv.ui.splitter.setChildrenCollapsible(False)
-        self.imv.ui.splitter.setStretchFactor(8,1)
-        self.imv.timeLine.setHoverPen('r', width=12)
-        self.imv.view.setMenuEnabled(False)  
-        roi = self.imv.getRoiPlot()
-        slider = roi.plotItem.getViewWidget()
-        slider.setMaximumHeight(60)
-        roi.plotItem.setMenuEnabled(False)
-        ## Display the data and assign each frame a time value from 1.0 to 3.0
-        self.imv.setImage(self.data, xvals=np.linspace(1, 144, self.data.shape[0], dtype = 'int32'))
-        ## Set a custom color map
-        colors = [
-            (0, 0, 0),
-            (45, 5, 61),
-            (84, 42, 55),
-            (150, 87, 60),
-            (208, 171, 141),
-            (255, 255, 255)
-        ]
-        self.cmap = pg.ColorMap(pos=np.linspace(0.0, 1.0, 6), color=colors)
-        self.imv.setColorMap(self.cmap)
-        self.imv.setCurrentIndex(72)
-        self.imv.ui.roiBtn.hide()
-        self.imv.ui.menuBtn.hide()
+        if fileName:
+            dp_input, image_header = load(fileName)
+            self.data = np.asarray(dp_input)
+        
+            # Interpret image data as row-major instead of col-major
+            pg.setConfigOptions(imageAxisOrder='col-major')
+            self.imv = pg.ImageView()
+    #        self.imv.view.setBackgroundColor('#f0f0f0')
+            self.imv.timeLine.setPen('y', width=10)
+            self.imv.ui.splitter.setChildrenCollapsible(False)
+            self.imv.ui.splitter.setStretchFactor(8,1)
+            self.imv.timeLine.setHoverPen('r', width=12)
+            self.imv.view.setMenuEnabled(False)  
+            roi = self.imv.getRoiPlot()
+            slider = roi.plotItem.getViewWidget()
+            slider.setMaximumHeight(60)
+            roi.plotItem.setMenuEnabled(False)
+            ## Display the data and assign each frame a time value from 1.0 to 3.0
+            self.imv.setImage(self.data, xvals=np.linspace(1, 144, self.data.shape[0], dtype = 'int32'))
+            ## Set a custom color map
+            colors = [
+                (0, 0, 0),
+                (45, 5, 61),
+                (84, 42, 55),
+                (150, 87, 60),
+                (208, 171, 141),
+                (255, 255, 255)
+            ]
+            self.cmap = pg.ColorMap(pos=np.linspace(0.0, 1.0, 6), color=colors)
+            self.imv.setColorMap(self.cmap)
+            self.imv.setCurrentIndex(72)
+            self.imv.ui.roiBtn.hide()
+            self.imv.ui.menuBtn.hide()
         
     def setIndex(self, index):
         self.imv.setCurrentIndex(index)
