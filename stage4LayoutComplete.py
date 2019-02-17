@@ -391,7 +391,10 @@ class imagePlot(pg.ImageView):
 #        'xMin', 'xMax', 'yMin', 'yMax', 'minXRange', 'maxXRange', 'minYRange', 'maxYRange'
 #        self.setLimits(())
 
-        
-App = QApplication(sys.argv)
+#screen size determine 
+App = QtCore.QCoreApplication.instance()
+    # creating main window
+if App is None:
+    App = QApplication(sys.argv)
 window = Window()
 sys.exit(App.exec())
