@@ -24,10 +24,15 @@ screen = app.primaryScreen()
 if screen:
     size = screen.size()
 
+# setimage.axes -> transform (coronal, saggital, transverse)
+# setcurrentindex for slider value update   
+#    http://www.pyqtgraph.org/documentation/graphicsItems/viewbox.html#pyqtgraph.ViewBox.setMouseEnabled
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.window_widget = Grid(parent=self)
+        
+        self.window_widget.installEventFilter(self)
         #set minimum window size
         self.setMinimumSize(QSize(600,400))
 
@@ -84,6 +89,13 @@ class MainWindow(QtWidgets.QMainWindow):
         tutorialButton.setStatusTip("Demo Tutorial")
         tutorialButton.triggered.connect(self.AboutSoftware)
         helpMenu.addAction(tutorialButton)
+        
+    def eventFilter(self, obj, event):
+        if event.type() in (QtCore.QEvent.MouseButtonPress,QtCore.QEvent.MouseButtonDblClick):
+            if(event.button() == QtCore.Qt.RightButton):
+                print("Right button clicked")
+                return True;
+        return super(MainWindow, self).eventFilter(obj, event)
 
     def CloseApp(self):
         reply = QMessageBox.question(self, "Close Message", "Are You Sure To Close Window",
@@ -152,6 +164,7 @@ class Grid(QWidget):
 class imagePlot(pg.ImageView):
     dp_input, image_header = load('DP_preprocessed.nii.gz')
     data = np.asarray(dp_input)
+#    data = np.transpose(data,(0,2,1))
 
     # Interpret image data as row-major instead of col-major
     pg.setConfigOptions(imageAxisOrder='col-major')
@@ -161,7 +174,19 @@ class imagePlot(pg.ImageView):
     # Create window with ImageView widget
     win = QtGui.QMainWindow()
     imv = pg.ImageView()
+    
+#    imv.view.setLimits(maxXRange = data.shape[1], maxYRange= data.shape[2])
+#    imv.view.setAspectLocked(lock=False, ratio=2 )
+#    imv.autoRange()
     win.setCentralWidget(imv)
+    imv.view.setBackgroundColor('#f0f0f0')
+    imv.timeLine.setPen('y', width=10)
+    imv.ui.splitter.setChildrenCollapsible(False)
+    imv.timeLine.setHoverPen('r', width=12)
+    imv.view.setMenuEnabled(False)
+    imv.ui.roiPlot.setMouseEnabled(False)
+    
+#    imv.ui.splitter.setCollapsible(2,False)
     win.show()
     
     win.setWindowTitle('pyqtgraph example: ImageView')
