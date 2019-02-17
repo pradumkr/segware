@@ -225,9 +225,7 @@ class Layout(QWidget):
         
     def createControlLayout(self):
         groupBox = QGroupBox("Controls")
-
-        vBoxLayout = QVBoxLayout()
-        
+        vBoxLayout = QVBoxLayout()        
         hboxModality = QHBoxLayout()
         modalityLabel = QLabel("Choose Modality:")
         hboxModality.addWidget(modalityLabel)
@@ -278,17 +276,49 @@ class Layout(QWidget):
         self.slice_box.setRange(0,144)
         self.slice_box.valueChanged.connect(self.slice_box_value_changed)
         slider_layout = QGridLayout()
-        slider_layout.addWidget(self.slider, 0,0,1,4);
-        slider_layout.addWidget(self.slice_box,0,4,1,1);
-        
+        slider_layout.addWidget(self.slider, 0,0,1,5);
+        slider_layout.addWidget(self.slice_box,0,5,1,1);
+        d1 = QPushButton("Transverse",self)
+        d1.clicked.connect(self.transverse_view)
+        d2 = QPushButton("Saggital",self)
+        d2.clicked.connect(self.saggital_view)
+        d3 = QPushButton("Coronal",self)
+        d3.clicked.connect(self.coronal_view)
+        slider_layout.addWidget(d1, 1,0,1,2)
+        slider_layout.addWidget(d2, 1,2,1,2)
+        slider_layout.addWidget(d3, 1,4,1,2)
         vBoxLayout.addLayout(slider_layout)
 
         groupBox.setLayout(vBoxLayout)
 
         return groupBox
     
+    def transverse_view(self):
+        slices = self.pgcustom1.set_transverse()
+        print(slices)
+        self.slice_box.setRange(0,slices)
+        self.slider.setRange(0, slices)
+        self.pgcustom2.set_transverse()
+        self.pgcustom3.set_transverse()
+        
+    def saggital_view(self):
+        slices = self.pgcustom1.set_saggital()
+        print(slices)
+        self.slider.setRange(0, slices)
+        self.slice_box.setRange(0,slices)
+        self.pgcustom2.set_saggital()
+        self.pgcustom3.set_saggital()
+    
+    def coronal_view(self):
+        slices = self.pgcustom1.set_coronal()
+        print(slices)
+        self.slider.setRange(0, slices)
+        self.slice_box.setRange(0,slices)
+        self.pgcustom2.set_coronal()
+        self.pgcustom3.set_coronal()
+       
     def slider_value_changed(self):
-        print(str(self.slider.value()))
+#        print(str(self.slider.value()))
         self.slice_box.setValue(self.slider.value())
         self.nameLabel.setText("Current Slice: " +str(self.slider.value()))
         self.pgcustom1.setIndex(self.slider.value())
@@ -296,7 +326,7 @@ class Layout(QWidget):
         self.pgcustom3.setIndex(self.slider.value())
         
     def slice_box_value_changed(self):
-        print(str(self.slice_box.value()))
+#        print(str(self.slice_box.value()))
         self.slider.setValue(self.slice_box.value())
         self.nameLabel.setText("Current Slice: " +str(self.slider.value()))
         self.pgcustom1.setIndex(self.slider.value())
@@ -315,7 +345,7 @@ class Layout(QWidget):
     
     def createMaskView(self):
         groupBox = QGroupBox("Mask View")
-        self.pgcustom = imagePlot(fileName = 'DP_preprocessed.nii.gz')
+#        self.pgcustom = imagePlot(fileName = 'DP_preprocessed.nii.gz')
         vBoxLayout = QVBoxLayout()
         vBoxLayout.addWidget(self.pgcustom2.imv)
         saveBtn = QPushButton("Save",self)
@@ -326,7 +356,7 @@ class Layout(QWidget):
     
     def createSegmentedView(self):
         groupBox = QGroupBox("Segmentation View")
-        self.pgcustom = imagePlot(fileName = 'DP_preprocessed.nii.gz')
+#        self.pgcustom = imagePlot(fileName = 'DP_preprocessed.nii.gz')
         vBoxLayout = QVBoxLayout()
         vBoxLayout.addWidget(self.pgcustom3.imv)
         saveBtn = QPushButton("Save",self)
@@ -339,12 +369,11 @@ class Layout(QWidget):
     def style_choice(self, text):
         print(text)
     
-    
 class imagePlot(pg.ImageView):
     
     def __init__(self, fileName):
         dp_input, image_header = load(fileName)
-        data = np.asarray(dp_input)
+        self.data = np.asarray(dp_input)
     
         # Interpret image data as row-major instead of col-major
         pg.setConfigOptions(imageAxisOrder='col-major')
@@ -360,7 +389,7 @@ class imagePlot(pg.ImageView):
         slider.setMaximumHeight(60)
         roi.plotItem.setMenuEnabled(False)
         ## Display the data and assign each frame a time value from 1.0 to 3.0
-        self.imv.setImage(data, xvals=np.linspace(1, 144, data.shape[0], dtype = 'int32'), scale=(120,120))
+        self.imv.setImage(self.data, xvals=np.linspace(1, 144, self.data.shape[0], dtype = 'int32'))
         ## Set a custom color map
         colors = [
             (0, 0, 0),
@@ -378,6 +407,24 @@ class imagePlot(pg.ImageView):
         
     def setIndex(self, index):
         self.imv.setCurrentIndex(index)
+        
+    def set_transverse(self):
+        data = np.transpose(self.data, (0,1,2))
+        self.imv.setImage(data, xvals=np.linspace(1, data.shape[0], data.shape[0], dtype = 'int32'))
+        self.imv.setCurrentIndex(int(data.shape[0]/2))
+        return data.shape[0]
+    
+    def set_coronal(self):
+        data = np.transpose(self.data, (2,1,0))
+        self.imv.setImage(data, xvals=np.linspace(1, data.shape[0], data.shape[0], dtype = 'int32'))
+        self.imv.setCurrentIndex(int(data.shape[0]/2))
+        return data.shape[0]
+    
+    def set_saggital(self):
+        data = np.transpose(self.data, (1,0,2))
+        self.imv.setImage(data, xvals=np.linspace(1, data.shape[0], data.shape[0], dtype = 'int32'))
+        self.imv.setCurrentIndex(int(data.shape[0]/2))
+        return data.shape[0]
 #        'xMin', 'xMax', 'yMin', 'yMax', 'minXRange', 'maxXRange', 'minYRange', 'maxYRange'
 #        self.setLimits(())
 
