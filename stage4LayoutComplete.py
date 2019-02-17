@@ -1,24 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sat Feb 16 23:49:25 2019
-
-@author: swati
-"""
-
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Feb 14 17:19:37 2019
-
-@author: swati
-"""
-
-# -*- coding: utf-8 -*-
-"""
 Created on Tue Feb 12 11:00:15 2019
 
 @author: swati
 """
 
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *  #ref for icons :https://joekuan.wordpress.com/2015/09/23/list-of-qt-icons/
+from PyQt5.QtWidgets import *
 from PyQt5.QtCore import QFile, QFileInfo, QSettings, Qt
 from PyQt5 import QtGui
 from PyQt5.QtGui import QIcon
@@ -28,7 +17,7 @@ import sys
 
 import pyqtgraph as pg
 import numpy as np
-
+import qtawesome as qta
 from pyqtgraph.Qt import QtCore
 from medpy.io import load
 
@@ -58,16 +47,17 @@ class Window(QMainWindow):
 
     def createActions(self):
         self.openAct = QAction(QIcon("Images/open.png"), 'Open', self, shortcut="Ctrl+O", statusTip="Open MRI (.nii, .nii.gz, .mha)", triggered=self.OpenMRI)
-        self.openLastAct = QAction(QIcon("Images/open.png"), 'Open last closed', self, shortcut="Ctrl+Shift+T", statusTip="Open last closed MRI (.nii, .nii.gz, .mha)", triggered=self.OpenLastMRI)
+        self.openLastAct = QAction(self.style().standardIcon(getattr(QStyle, 'SP_FileDialogEnd')), 'Open last closed', self, shortcut="Ctrl+Shift+T", statusTip="Open last closed MRI (.nii, .nii.gz, .mha)", triggered=self.OpenLastMRI)
         for i in range(Window.MaxRecentFiles):
             self.recentFileActs.append(
                     QAction(self, visible=False,
                             triggered=self.OpenRecentMRI))
-        self.saveSegAct = QAction(QIcon("Images/saveSegmentedMRI.png"), 'Save segmented MRI', self, shortcut="Ctrl+S", statusTip="Save segmented MRIs", triggered=self.SaveSegmentedMRI)
+        self.saveSegAct = QAction(self.style().standardIcon(getattr(QStyle, 'SP_DialogSaveButton')), 'Save segmented MRI', self, shortcut="Ctrl+S", statusTip="Save segmented MRIs", triggered=self.SaveSegmentedMRI)
         self.saveMaskAct = QAction(QIcon("Images/saveMask.png"), 'Save mask', self, shortcut="Ctrl+Shift+M", statusTip="Save Mask of segmented MRIs", triggered=self.SaveMask)
-        self.exitAct = QAction(QIcon("Images/close.png"), 'Exit', self, shortcut="Ctrl+Q", statusTip="Exit Application", triggered=self.CloseApp)
+        self.exitAct = QAction(QIcon("Images/close2.png"), 'Exit', self, shortcut="Ctrl+Q", statusTip="Exit Application", triggered=self.CloseApp)
         self.aboutAct = QAction(QIcon("Images/about.png"), 'About', self, shortcut="Ctrl+A", statusTip="About software", triggered=self.AboutSoftware)
-        self.tutorialAct = QAction(QIcon("Images/tutorial.png"), 'Tutorial', self, statusTip="Demo Tutorial", triggered=self.AboutSoftware)
+#        flag = qta.icon('fa5.flag')
+        self.tutorialAct = QAction(self.style().standardIcon(getattr(QStyle, 'SP_MessageBoxQuestion')), 'Tutorial', self, statusTip="Demo Tutorial", triggered=self.AboutSoftware)
 
         
     def createMenus(self):
