@@ -22,7 +22,7 @@ Created on Tue Feb 12 11:00:15 2019
 from PyQt5.QtCore import QFile, QFileInfo, QSettings, Qt
 from PyQt5 import QtGui
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import (QApplication, QMainWindow,QWidget, QAction, QMessageBox, QLabel, QRadioButton, 
+from PyQt5.QtWidgets import (QSpinBox, QSlider,QApplication, QMainWindow,QWidget, QAction, QMessageBox, QLabel, QRadioButton, 
     QFileDialog, QGridLayout, QPushButton, QMenu, QGroupBox, QVBoxLayout, QHBoxLayout, QScrollArea)
 import sys
 
@@ -202,6 +202,9 @@ class Layout(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         grid = QGridLayout()
+        self.pgcustom1 = imagePlot(fileName = 'DP_preprocessed.nii.gz')
+        self.pgcustom2 = imagePlot(fileName = 'DP_preprocessed.nii.gz')
+        self.pgcustom3 = imagePlot(fileName = 'DP_preprocessed.nii.gz')
         self.controlLayout = self.createControlLayout()
         self.mriView = self.createMRIView()
         self.maskView = self.createMaskView()
@@ -265,44 +268,77 @@ class Layout(QWidget):
         comboBox.addItem("White Matter (WM)")
         comboBox.activated[str].connect(self.style_choice)
         hbox.addWidget(comboBox)
+        
         vBoxLayout.addLayout(hbox)
+        
+        self.slider = QSlider(Qt.Horizontal)
+        self.slider.setFocusPolicy(Qt.StrongFocus)
+        self.slider.setMinimum(0)
+        self.slider.setMaximum(144)
+        self.slider.setValue(0)
+        self.slider.setTickInterval(1)
+        self.slider.valueChanged.connect(self.slider_value_changed)
+#        vBoxLayout.addWidget(self.slider)
+        
+        self.nameLabel = QLabel("Current Slice : ")
+        self.nameLabel.setMaximumHeight(20)
+        vBoxLayout.addWidget(self.nameLabel)
+        
+        self.slice_box = QSpinBox()
+        self.slice_box.setRange(0,144)
+        self.slice_box.valueChanged.connect(self.slice_box_value_changed)
+        slider_layout = QGridLayout()
+        slider_layout.addWidget(self.slider, 0,0,1,4);
+        slider_layout.addWidget(self.slice_box,0,4,1,1);
+        
+        vBoxLayout.addLayout(slider_layout)
 
         groupBox.setLayout(vBoxLayout)
 
         return groupBox
     
+    def slider_value_changed(self):
+        print(str(self.slider.value()))
+        self.slice_box.setValue(self.slider.value())
+        self.nameLabel.setText("Current Slice: " +str(self.slider.value()))
+        self.pgcustom1.setIndex(self.slider.value())
+        self.pgcustom2.setIndex(self.slider.value())
+        self.pgcustom3.setIndex(self.slider.value())
+        
+    def slice_box_value_changed(self):
+        print(str(self.slice_box.value()))
+        self.slider.setValue(self.slice_box.value())
+        self.nameLabel.setText("Current Slice: " +str(self.slider.value()))
+        self.pgcustom1.setIndex(self.slider.value())
+        self.pgcustom2.setIndex(self.slider.value())
+        self.pgcustom3.setIndex(self.slider.value())
+    
     def createMRIView(self):
         groupBox = QGroupBox("MRI View")
-
-        self.pgcustom = imagePlot(fileName = 'DP_preprocessed.nii.gz')
         vBoxLayout = QVBoxLayout()
-        vBoxLayout.addWidget(self.pgcustom.imv)
+        vBoxLayout.addWidget(self.pgcustom1.imv)
         saveBtn = QPushButton("Save",self)
         vBoxLayout.addWidget(saveBtn)
 #        vBoxLayout.addStretch(1)
         groupBox.setLayout(vBoxLayout)
-
         return groupBox
     
     def createMaskView(self):
         groupBox = QGroupBox("Mask View")
-
         self.pgcustom = imagePlot(fileName = 'DP_preprocessed.nii.gz')
         vBoxLayout = QVBoxLayout()
-        vBoxLayout.addWidget(self.pgcustom.imv)
+        vBoxLayout.addWidget(self.pgcustom2.imv)
         saveBtn = QPushButton("Save",self)
         vBoxLayout.addWidget(saveBtn)
 #        vBoxLayout.addStretch(1)
         groupBox.setLayout(vBoxLayout)
-
         return groupBox
     
     def createSegmentedView(self):
         groupBox = QGroupBox("Segmentation View")
-
         self.pgcustom = imagePlot(fileName = 'DP_preprocessed.nii.gz')
         vBoxLayout = QVBoxLayout()
-        vBoxLayout.addWidget(self.pgcustom.imv)
+        vBoxLayout.addWidget(self.pgcustom3.imv)
         saveBtn = QPushButton("Save",self)
         vBoxLayout.addWidget(saveBtn)
 #        vBoxLayout.addStretch(1)
@@ -323,7 +359,16 @@ class imagePlot(pg.ImageView):
         # Interpret image data as row-major instead of col-major
         pg.setConfigOptions(imageAxisOrder='col-major')
         self.imv = pg.ImageView()
-    
+#        self.imv.view.setBackgroundColor('#f0f0f0')
+        self.imv.timeLine.setPen('y', width=10)
+        self.imv.ui.splitter.setChildrenCollapsible(False)
+        self.imv.ui.splitter.setStretchFactor(8,1)
+        self.imv.timeLine.setHoverPen('r', width=12)
+        self.imv.view.setMenuEnabled(False)  
+        roi = self.imv.getRoiPlot()
+        slider = roi.plotItem.getViewWidget()
+        slider.setMaximumHeight(60)
+        roi.plotItem.setMenuEnabled(False)
         ## Display the data and assign each frame a time value from 1.0 to 3.0
         self.imv.setImage(data, xvals=np.linspace(1, 144, data.shape[0], dtype = 'int32'), scale=(120,120))
         ## Set a custom color map
@@ -341,6 +386,8 @@ class imagePlot(pg.ImageView):
         self.imv.ui.roiBtn.hide()
         self.imv.ui.menuBtn.hide()
         
+    def setIndex(self, index):
+        self.imv.setCurrentIndex(index)
 #        'xMin', 'xMax', 'yMin', 'yMax', 'minXRange', 'maxXRange', 'minYRange', 'maxYRange'
 #        self.setLimits(())
 

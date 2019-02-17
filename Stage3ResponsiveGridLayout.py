@@ -156,10 +156,46 @@ class Grid(QWidget):
 #        button.clicked.connect(self.CloseApp)
     
         
+        self.slider = QSlider(Qt.Horizontal)
+        self.slider.setFocusPolicy(Qt.StrongFocus)
+        self.slider.setMinimum(0)
+        self.slider.setMaximum(144)
+        self.slider.setValue(0)
+        self.slider.setTickInterval(1)
+        self.slider.valueChanged.connect(self.slider_value_changed)
+#        vBoxLayout.addWidget(self.slider)
+        
+        self.nameLabel = QLabel("Current Slice : ")
+        self.nameLabel.setMaximumHeight(20)
+        vBoxLayout.addWidget(self.nameLabel)
+        
+        self.slice_box = QSpinBox()
+        self.slice_box.setRange(0,144)
+        self.slice_box.valueChanged.connect(self.slice_box_value_changed)
+        slider_layout = QGridLayout()
+        slider_layout.addWidget(self.slider, 0,0,1,4);
+        slider_layout.addWidget(self.slice_box,0,4,1,1);
+        
+        vBoxLayout.addLayout(slider_layout)
+        
         grid_layout.addLayout(vBoxLayout, 0, 0)
         grid_layout.addWidget(self.pgcustom.win , 0, 1)
         grid_layout.addWidget(self.pgcustom2.win, 1, 0)
         grid_layout.addWidget(self.pgcustom3.win, 1, 1 )
+    
+    def slider_value_changed(self):
+        print(str(self.slider.value()))
+        self.slice_box.setValue(self.slider.value())
+        self.nameLabel.setText("Current Slice: " +str(self.slider.value()))
+        self.pgcustom.setCurrentIndex(self.slider.value())
+        
+    def slice_box_value_changed(self):
+        print(str(self.slice_box.value()))
+        self.slider.setValue(self.slice_box.value())
+        self.nameLabel.setText("Current Slice: " +str(self.slider.value()))
+        self.pgcustom.setCurrentIndex(self.slider.value())
+        
+        
         
 class imagePlot(pg.ImageView):
     dp_input, image_header = load('DP_preprocessed.nii.gz')
@@ -182,10 +218,13 @@ class imagePlot(pg.ImageView):
     imv.view.setBackgroundColor('#f0f0f0')
     imv.timeLine.setPen('y', width=10)
     imv.ui.splitter.setChildrenCollapsible(False)
+    imv.ui.splitter.setStretchFactor(8,1)
     imv.timeLine.setHoverPen('r', width=12)
-    imv.view.setMenuEnabled(False)
-    imv.ui.roiPlot.setMouseEnabled(False)
-    
+    imv.view.setMenuEnabled(False)  
+    roi = imv.getRoiPlot()
+    slider = roi.plotItem.getViewWidget()
+    slider.setMaximumHeight(60)
+    roi.plotItem.setMenuEnabled(False)
 #    imv.ui.splitter.setCollapsible(2,False)
     win.show()
     
@@ -207,6 +246,8 @@ class imagePlot(pg.ImageView):
     imv.setCurrentIndex(72)
     imv.ui.roiBtn.hide()
     imv.ui.menuBtn.hide()
+    
+    def 
 
 
 class imagePlot1(pg.ImageView):
