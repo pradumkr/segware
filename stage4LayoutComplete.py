@@ -45,8 +45,13 @@ class Window(QMainWindow):
         self.statusBar()
         self.setWindowTitle(self.title)
         self.setGeometry(self.top, self.left, self.width, self.height)
-        self.show()
+        self.showMaximized()
         self.files = None
+        
+        
+#        --------------------- 
+        
+        
 
     def createActions(self):
         self.openAct = QAction(QIcon("Images/open.png"), 'Open', self, shortcut="Ctrl+O", statusTip="Open MRI (.nii, .nii.gz, .mha)", triggered=self.widget.OpenMRI)
@@ -129,7 +134,11 @@ class Layout(QWidget):
     
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.grid = QGridLayout()
+        self.layout = QHBoxLayout(self)
+        self.scrollArea = QScrollArea(self)
+        self.scrollArea.setWidgetResizable(True)
+        self.scrollAreaWidgetContents = QWidget()
+        self.grid = QGridLayout(self.scrollAreaWidgetContents)
         self.MaxRecentFiles = 5
         self.pgcustom1 = None;
         self.pgcustom2 = imagePlot(fileName = 'DP_preprocessed.nii.gz')
@@ -147,22 +156,24 @@ class Layout(QWidget):
         else:
             self.grid.addWidget(self.no_preview, 0, 1)
         
-        scroll = QScrollArea()
-        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        scroll.setWidgetResizable(False)
-        scroll.setLayout(self.grid)
+#        scroll = QScrollArea()
+#        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+#        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+#        scroll.setWidgetResizable(False)
+#        scroll.setLayout(self.grid)
         
-        vLayout = QVBoxLayout(self)
-        vLayout.addWidget(scroll)
-        self.setLayout(vLayout)
+#        vLayout = QVBoxLayout(self)
+#        vLayout.addWidget(scroll)
+#        self.setLayout(vLayout)
         self.files = None
         self.recentFileActs = []
-        
+    
+        self.scrollArea.setWidget(self.scrollAreaWidgetContents)
+        self.layout.addWidget(self.scrollArea)
 #        self.setLayout(grid)
     def segment(self):
-        self.createMaskView()
-        self.createSegmentedView()
+        self.createMaskView(self.files['T1'])
+        self.createSegmentedView(self.files['T1'])
 #        self.grid.addWidget(self.maskView, 1, 0)
 #        self.grid.addWidget(self.segmentedView, 1, 1)
         
@@ -253,6 +264,11 @@ class Layout(QWidget):
             print(value)
             self.files = value
             self.createMRIView(self.files['T1'])
+#            self.setMaximumSize(900,450)
+#            self.setMinimumSize(900,450)
+            if self.maskView:
+                self.maskView.hide()
+                self.segmentedView.hide()
             
     def OpenLastMRI(self):
         print("In open last MRI")
@@ -398,9 +414,9 @@ class Layout(QWidget):
         self.grid.addWidget(self.mriView, 0, 1)
         
     
-    def createMaskView(self):
+    def createMaskView(self,filename):
         groupBox = QGroupBox("Mask View")
-#        self.pgcustom = imagePlot(fileName = 'DP_preprocessed.nii.gz')
+        self.pgcustom2 = imagePlot(fileName = filename)
         vBoxLayout = QVBoxLayout()
         vBoxLayout.addWidget(self.pgcustom2.imv)
         saveBtn = QPushButton("Save",self)
@@ -410,9 +426,9 @@ class Layout(QWidget):
         self.maskView = groupBox
         self.grid.addWidget(self.maskView, 1, 0)
     
-    def createSegmentedView(self):
+    def createSegmentedView(self, filename):
         groupBox = QGroupBox("Segmentation View")
-#        self.pgcustom = imagePlot(fileName = 'DP_preprocessed.nii.gz')
+        self.pgcustom3 = imagePlot(fileName = filename)
         vBoxLayout = QVBoxLayout()
         vBoxLayout.addWidget(self.pgcustom3.imv)
         saveBtn = QPushButton("Save",self)
