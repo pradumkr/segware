@@ -71,9 +71,10 @@ class BrainFluids():
         self.t1 = np.asarray(self.prep_t1)
         self.t2 = np.asarray(self.prep_t2)
 
-    def loadModel(self):
+    def loadModelAndPredictAll(self):
         self.model = get_segment_model((48,64,64,2))
         self.model.load_weights('./Models/modelBrainFluids.h5')
+        self.predict()
         
     def predict(self):
         t1_test, t2_test = self.t1[0:1], self.t2[0:1]

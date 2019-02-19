@@ -29,10 +29,8 @@ os.environ["PATH"] += os.pathsep + 'C:/Users/swati/Anaconda3/envs/tensorflow/Lib
 
 def res_block(inputs, filters, kernel_size = 1 , scale = 0.1):
     residual = Convolution3D(padding='same', filters=filters, kernel_size = 1)(inputs)
-    print(inputs.shape, residual.shape)
     residual = BatchNormalization()(residual)
     residual = Lambda(lambda x: x*scale)(residual)
-    print(inputs.shape, residual.shape)
     res = concatenate([inputs, residual])
     return ELU()(res) 
 
@@ -40,15 +38,6 @@ def get_segment_model(inp_shape, k_size=2):
     
     merge_axis = -1 # Feature maps are concatenated along last axis (for tf backend)
     data = Input(shape=inp_shape)
-    
-#    conv1 = Convolution3D(padding='same', filters=32, kernel_size=k_size)(data)
-#    conv1 = BatchNormalization()(conv1)
-#    conv1 = Activation('relu')(conv1)
-#    conv2 = Convolution3D(padding='same', filters=32, kernel_size=k_size)(conv1)
-#    conv2 = BatchNormalization()(conv2)
-#    conv2 = Activation('relu')(conv2)
-#    pool1 = MaxPooling3D(pool_size=(2, 2, 2))(conv2)
-    
     conv11 = Convolution3D(padding='same', filters=32, kernel_size = 1)(data)
     conv11 = Activation('relu')(conv11)
     conv11 = BatchNormalization()(conv11)
@@ -86,14 +75,6 @@ def get_segment_model(inp_shape, k_size=2):
     conv4 = Activation('relu')(conv4)
     pool2 = MaxPooling3D(pool_size=(2, 2, 2))(conv4)
     pool2 = Dropout(0.2)(pool2)
-    
-#    conv5 = Convolution3D(padding='same', filters=64, kernel_size=k_size)(pool2)
-#    conv5 = BatchNormalization()(conv5)
-#    conv5 = Activation('relu')(conv5)
-#    conv6 = Convolution3D(padding='same', filters=64, kernel_size=k_size)(conv5)
-#    conv6 = BatchNormalization()(conv6)
-#    conv6 = Activation('relu')(conv6)
-#    pool3 = MaxPooling3D(pool_size=(2, 2, 2),padding="same")(conv6)
     
 #    ------------------------------------------------------------------------------------------
     
@@ -255,7 +236,6 @@ def get_segment_model(inp_shape, k_size=2):
 
     model = Model(data, output)
     
-    print(model.summary())
     
     return model
 

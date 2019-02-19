@@ -16,12 +16,11 @@ from PyQt5.QtWidgets import (QSpinBox, QSlider,QApplication, QMainWindow,QWidget
 import sys
 import qtawesome as qta
 from pyqtgraph.Qt import QtCore
-from openPopup import *
+from openPopup import PopUpDLG
 from imagePlot import imagePlot
 from utilitiesBackend import *
 from medpy.io import load
 import numpy as np
-from time import sleep
 
         
         
@@ -51,7 +50,6 @@ class Window(QMainWindow):
         
         
         self.createActions()
-        self.createTools()
         self.createMenus()
         self.statusBar()
         self.setWindowTitle(self.title)
@@ -65,13 +63,12 @@ class Window(QMainWindow):
         
 
     def createActions(self):
-        self.viewAct = QAction(QIcon("Images/open.png"), 'View', self, shortcut="Ctrl+O", statusTip="Open MRI (.nii, .nii.gz, .mha)", triggered=self.OpenMRI)
+        self.openAct = QAction(QIcon("Images/open.png"), 'Open', self, shortcut="Ctrl+O", statusTip="Open MRI (.nii, .nii.gz, .mha)", triggered=self.OpenMRI)
         self.openLastAct = QAction(self.style().standardIcon(getattr(QStyle, 'SP_FileDialogEnd')), 'Open last closed', self, shortcut="Ctrl+Shift+T", statusTip="Open last closed MRI (.nii, .nii.gz, .mha)", triggered=self.OpenLastMRI)
         for i in range(self.MaxRecentFiles):
             self.recentFileActs.append(
                     QAction(self, visible=False,
                             triggered=self.OpenRecentMRI))
-        self.segmentAct = QAction(self.style().standardIcon(getattr(QStyle, 'SP_DialogSaveButton')), 'Segment Tumor, CSF, GM or WM', self, shortcut="Ctrl+Shift+F", statusTip="Segment", triggered=self.SegementDialog)
         self.saveSegAct = QAction(self.style().standardIcon(getattr(QStyle, 'SP_DialogSaveButton')), 'Save segmented MRI', self, shortcut="Ctrl+S", statusTip="Save segmented MRIs", triggered=self.SaveSegmentedMRI)
         self.saveMaskAct = QAction(QIcon("Images/saveMask.png"), 'Save mask', self, shortcut="Ctrl+Shift+M", statusTip="Save Mask of segmented MRIs", triggered=self.SaveMask)
         self.resetAct = QAction(QIcon("Images/about.png"), 'Reset', self, shortcut="Ctrl+C", statusTip="Clear all data", triggered=self.restart)
@@ -79,18 +76,12 @@ class Window(QMainWindow):
         self.aboutAct = QAction(QIcon("Images/about.png"), 'About', self, shortcut="Ctrl+A", statusTip="About software", triggered=self.AboutSoftware)
         self.tutorialAct = QAction(self.style().standardIcon(getattr(QStyle, 'SP_MessageBoxQuestion')), 'Tutorial', self, statusTip="Demo Tutorial", triggered=self.AboutSoftware)
 
-    def createTools(self):
-        self.openTool = self.addToolBar('View')
-        self.openTool.addAction(self.viewAct)
-        self.openTool.addSeparator()
-        self.openTool.addAction(self.segmentAct)
-        self.openTool.setMovable(True)
         
     def createMenus(self):
         
         self.mainMenu = self.menuBar()
         self.fileMenu = self.mainMenu.addMenu("File")     
-        self.fileMenu.addAction(self.viewAct)
+        self.fileMenu.addAction(self.openAct)
         self.fileMenu.addAction(self.openLastAct)
         
         self.openRecentMenu = QMenu('Open Recent', self)
@@ -101,7 +92,7 @@ class Window(QMainWindow):
         self.fileMenu.addSeparator()
         self.updateRecentFileActions()
 
-        self.fileMenu.addAction(self.segmentAct)
+        
         self.fileMenu.addAction(self.saveSegAct)
         self.fileMenu.addAction(self.saveMaskAct)
 
@@ -119,16 +110,9 @@ class Window(QMainWindow):
         if reply == QMessageBox.Yes:
             self.close()
             
-    def SegementDialog(self):
-        dialog = PopUpSegment()
-        value = dialog.exec_()
-        print(value)
-        if value:
-            self.widget.segmentChoice(value)
-        
     def OpenMRI(self):
         print("In open")
-        dialog = PopUpDLG(style=4)
+        dialog = PopUpDLG(style = 4)
         value = dialog.exec_()
         if value:
             print(value)
@@ -139,7 +123,6 @@ class Window(QMainWindow):
             if self.files['F']: self.curData['F'], _ = load(self.files['F'])
             self.widget.createMRIView(self.curData['T1'])
             self.widget.t1Btn.setChecked(True)
-            self.widget.dTransverse.setChecked(True)
             self.loadFile(self.files['T1'])
             self.widget.curData = self.curData
             print(self.widget.curData.keys())
@@ -283,7 +266,6 @@ class Layout(QWidget):
         
     def t1View(self):
         self.mriViewPlot.imv.setImage(self.curData['T1'], xvals=np.linspace(1,self.curData['T1'].shape[0] , self.curData['T1'].shape[0], dtype = 'int32'))
-        self.setDimensionalityAndSlice()
 #        if self.segmentedView and self.files['seg_output']:
 #            self.createSegmentedView(self.files['seg_output']['T1'])
 #        if self.curData['tumor']:
@@ -291,7 +273,6 @@ class Layout(QWidget):
             
     def t2View(self):
         self.mriViewPlot.imv.setImage(self.curData['T2'], xvals=np.linspace(1,self.curData['T2'].shape[0] , self.curData['T2'].shape[0], dtype = 'int32'))
-        self.setDimensionalityAndSlice()
 #        if self.files['seg_output']:
 #            self.createSegmentedView(self.files['seg_output']['T2'])
 #        if self.files['mask_output']:
@@ -299,7 +280,6 @@ class Layout(QWidget):
     
     def t1cView(self):
         self.mriViewPlot.imv.setImage(self.curData['T1c'], xvals=np.linspace(1,self.curData['T1c'].shape[0] , self.curData['T1c'].shape[0], dtype = 'int32'))
-        self.setDimensionalityAndSlice()
 #        if self.files['seg_output']:
 #            self.createSegmentedView(self.files['seg_output']['T1c'])
 #        if self.files['mask_output']:
@@ -307,19 +287,12 @@ class Layout(QWidget):
     
     def fView(self):
         self.mriViewPlot.imv.setImage(self.curData['F'], xvals=np.linspace(1,self.curData['F'].shape[0] , self.curData['F'].shape[0], dtype = 'int32'))
-        self.setDimensionalityAndSlice()
 #        if self.files['seg_output']:
 #            self.createSegmentedView(self.files['seg_output']['F'])
 #        if self.files['mask_output']:
 #            self.createMaskView(self.files['mask_output'])
         
-    def setDimensionalityAndSlice(self):
-        self.dTransverse.setChecked(True)
-        self.mriViewPlot.setIndex(self.slider.value())
-        if self.maskViewPlot:
-            self.maskViewPlot.setIndex(self.slider.value())
-            self.segmentedViewPlot.setIndex(self.slider.value())
-        
+
     def createControlLayout(self):
         groupBox = QGroupBox("Controls")
         vBoxLayout = QVBoxLayout()
@@ -327,7 +300,6 @@ class Layout(QWidget):
         
         modalityLabel = QLabel("Choose Modality:")
         hboxModality.addWidget(modalityLabel)
-        self.modalGroup = QButtonGroup()
         
         self.t1Btn = QRadioButton("T1",self)
         self.t1Btn.clicked.connect(self.t1View)
@@ -345,13 +317,21 @@ class Layout(QWidget):
         self.flairBtn.clicked.connect(self.fView)
         hboxModality.addWidget(self.flairBtn)
         
-        self.modalGroup.addButton(self.t1Btn)
-        self.modalGroup.addButton(self.t2Btn)
-        self.modalGroup.addButton(self.t1cBtn)
-        self.modalGroup.addButton(self.flairBtn)
-        
         vBoxLayout.addLayout(hboxModality)
 
+        hbox = QHBoxLayout()
+        segmentLabel = QLabel("Segment:")
+        hbox.addWidget(segmentLabel)
+        comboBox = QtGui.QComboBox(self)
+        comboBox.addItem("-Select-")
+        comboBox.addItem("Tumor")
+        comboBox.addItem("Cerebrospinal Fluid (CSF)")
+        comboBox.addItem("Gray Matter (GM)")
+        comboBox.addItem("White Matter (WM)")
+        comboBox.activated[str].connect(self.style_choice)
+        hbox.addWidget(comboBox)
+        vBoxLayout.addLayout(hbox)
+        
         self.slider = QSlider(Qt.Horizontal)
         self.slider.setFocusPolicy(Qt.StrongFocus)
         self.slider.setMinimum(0)
@@ -376,22 +356,17 @@ class Layout(QWidget):
         slider_layout.addWidget(self.curLabel, 1,2,1,3)
         slider_layout.addWidget(self.slice_box,1,5,1,3);
         
-        self.dimGroup = QButtonGroup()
         dimLabel = QLabel("Choose Dimensionality:")
         slider_layout.addWidget(dimLabel, 2,0,1,2)
-        self.dTransverse = QRadioButton("Transverse",self)
-        self.dTransverse.clicked.connect(self.transverse_view)
-        self.dSaggital = QRadioButton("Saggital",self)
-        self.dSaggital.clicked.connect(self.saggital_view)
-        self.dCoronal = QRadioButton("Coronal",self)
-        self.dCoronal.clicked.connect(self.coronal_view)
-        self.dimGroup.addButton(self.dTransverse)
-        self.dimGroup.addButton(self.dSaggital)
-        self.dimGroup.addButton(self.dCoronal)
-        
-        slider_layout.addWidget(self.dTransverse, 2,2,1,2)
-        slider_layout.addWidget(self.dSaggital, 2,4,1,2)
-        slider_layout.addWidget(self.dCoronal, 2,6,1,2)
+        d1 = QRadioButton("Transverse",self)
+        d1.clicked.connect(self.transverse_view)
+        d2 = QRadioButton("Saggital",self)
+        d2.clicked.connect(self.saggital_view)
+        d3 = QRadioButton("Coronal",self)
+        d3.clicked.connect(self.coronal_view)
+        slider_layout.addWidget(d1, 2,2,1,2)
+        slider_layout.addWidget(d2, 2,4,1,2)
+        slider_layout.addWidget(d3, 2,6,1,2)
         vBoxLayout.addLayout(slider_layout)
 
         groupBox.setLayout(vBoxLayout)
@@ -486,72 +461,49 @@ class Layout(QWidget):
         self.segmentedView = groupBox
         self.grid.addWidget(self.segmentedView, 1, 1)
         
-    def segmentChoice(self, text):
+    def style_choice(self, text):
         print(text)
+#        self.segment()
         self.setMinimumSize(1000,800)
         if text == "Tumor":
-            dialog = PopUpDLG(style=4)
-            value = dialog.exec_()
-            if value:
-                self.files = value
-                self.curData['T1'], _ = load(self.files['T1'])
-                self.curData['T2'], _ = load(self.files['T2'])
-                self.curData['T1c'], _ = load(self.files['T1c'])
-                self.curData['F'], _ = load(self.files['F'])
-                self.createMRIView(self.curData['T1'])
-                sleep(3)
-                self.t1Btn.setChecked(True)
-                self.t1cBtn.setVisible(True)
-                self.flairBtn.setVisible(True)
-                self.curData = self.curData
-                self.tumoreModel = Tumor(self.curData['T1'], self.curData['T2'], self.curData['T1c'], self.curData['F'])
-                self.tumoreModel.loadModel()
+            self.tumoreModel = Tumor(self.curData['T1'], self.curData['T2'], self.curData['T1c'], self.curData['F'])
+            self.tumoreModel.loadModel()
+            print("....predicting")
+            self.curData['mask']['tumor'] = self.tumoreModel.predict()[:,:,:,0]
+            self.curData['mask']['tumor'] = np.transpose(self.curData['mask']['tumor'],(1,2,0))
+            print("...predicted")
+            self.createMaskView(self.curData['mask']['tumor'])
+            self.createSegmentedView(self.curData['mask']['tumor'])
+        elif text == "Cerebrospinal Fluid (CSF)":
+            if not self.bfModel:
+                self.bfModel = BrainFluids(self.curData['T1'], self.curData['T2'])
                 print("....predicting")
-                self.curData['mask']['tumor'] = self.tumoreModel.predict()[:,:,:,0]
-                self.curData['mask']['tumor'] = np.transpose(self.curData['mask']['tumor'],(1,2,0))
+                self.bfModel.loadModelAndPredictAll()
                 print("...predicted")
-                self.createMaskView(self.curData['mask']['tumor'])
-                self.createSegmentedView(self.curData['mask']['tumor'])
-        elif text == "--Select--":
-            return
+            self.curData['mask']['csf'] = self.bfModel.predictCSF()[0]
+            print(self.curData['mask']['csf'].shape)
+            self.createMaskView(self.curData['mask']['csf'])
+            self.createSegmentedView(self.curData['mask']['csf'])
+        elif text == "Gray Matter (GM)":
+            if not self.bfModel:
+                self.bfModel = BrainFluids(self.curData['T1'], self.curData['T2'])
+                print("....predicting")
+                self.bfModel.loadModelAndPredictAll()
+                print("...predicted")
+            self.curData['mask']['gm'] = self.bfModel.predictGM()[0]
+            self.createMaskView(self.curData['mask']['gm'])
+            self.createSegmentedView(self.curData['mask']['gm'])
+        elif text == "White Matter (WM)":
+            if not self.bfModel:
+                self.bfModel = BrainFluids(self.curData['T1'], self.curData['T2'])
+                print("....predicting")
+                self.bfModel.loadModelAndPredictAll()
+                print("...predicted")
+            self.curData['mask']['wm'] = self.bfModel.predictWM()[0]
+            self.createMaskView(self.curData['mask']['wm'])
+            self.createSegmentedView(self.curData['mask']['wm'])
         else:
-            dialog = PopUpDLG(style=2)
-            value = dialog.exec_()
-            if value:
-                self.files = value
-                self.curData['T1'], _ = load(self.files['T1'])
-                self.curData['T2'], _ = load(self.files['T2'])
-                self.createMRIView(self.curData['T1'])
-                sleep(3)
-                self.t1Btn.setChecked(True)
-                self.t1cBtn.setVisible(False)
-                self.flairBtn.setVisible(False)
-                self.curData = self.curData
-                if text == "Cerebrospinal Fluid (CSF)":
-                    self.bfModel = BrainFluids(self.curData['T1'], self.curData['T2'])
-                    print("....predicting")
-                    self.bfModel.loadModelAndPredictAll()
-                    print("...predicted")
-                    self.curData['mask']['csf'] = self.bfModel.predictCSF()[0]
-                    print(self.curData['mask']['csf'].shape)
-                    self.createMaskView(self.curData['mask']['csf'])
-                    self.createSegmentedView(self.curData['mask']['csf'])
-                elif text == "Gray Matter (GM)":
-                    self.bfModel = BrainFluids(self.curData['T1'], self.curData['T2'])
-                    print("....predicting")
-                    self.bfModel.loadModelAndPredictAll()
-                    print("...predicted")
-                    self.curData['mask']['gm'] = self.bfModel.predictGM()[0]
-                    self.createMaskView(self.curData['mask']['gm'])
-                    self.createSegmentedView(self.curData['mask']['gm'])
-                elif text == "White Matter (WM)":
-                    self.bfModel = BrainFluids(self.curData['T1'], self.curData['T2'])
-                    print("....predicting")
-                    self.bfModel.loadModelAndPredictAll()
-                    print("...predicted")
-                    self.curData['mask']['wm'] = self.bfModel.predictWM()[0]
-                    self.createMaskView(self.curData['mask']['wm'])
-                    self.createSegmentedView(self.curData['mask']['wm'])
+            return
 #        self.createSegmentedView(self.files['seg_output'])
 #        self.createMaskView(self.files['mask_output'])
 
