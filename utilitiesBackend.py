@@ -5,7 +5,6 @@ Created on Mon Feb 18 12:45:40 2019
 @author: swati
 """
 import os, glob, h5py
-import tensorflow as tf
 from time import time
 import numpy as np
 import cv2
@@ -15,13 +14,13 @@ from Models.IResUnetBrainFluids import *
 from skimage.io import imshow
 
 
-t1, _ = load('S:\\Our Projects and Papers\\Neonatal Brain MRI Segmentation Using Deep Concatenated Residual Learning\\Datasets\\iSeg-2017-Training\\subject-3-T1.img')
-t2, _ = load('S:\\Our Projects and Papers\\Neonatal Brain MRI Segmentation Using Deep Concatenated Residual Learning\\Datasets\\iSeg-2017-Training\\subject-3-T2.img')
-o, _ = load('S:\\Our Projects and Papers\\Neonatal Brain MRI Segmentation Using Deep Concatenated Residual Learning\\Datasets\\iSeg-2017-Training\\subject-3-label.img')
-o[o == 10] = 1 
-o[o == 150] = 2
-o[o == 250] = 3 
-o = o[np.newaxis,:,:,:]
+#t1, _ = load('S:\\Our Projects and Papers\\Neonatal Brain MRI Segmentation Using Deep Concatenated Residual Learning\\Datasets\\iSeg-2017-Training\\subject-3-T1.img')
+#t2, _ = load('S:\\Our Projects and Papers\\Neonatal Brain MRI Segmentation Using Deep Concatenated Residual Learning\\Datasets\\iSeg-2017-Training\\subject-3-T2.img')
+#o, _ = load('S:\\Our Projects and Papers\\Neonatal Brain MRI Segmentation Using Deep Concatenated Residual Learning\\Datasets\\iSeg-2017-Training\\subject-3-label.img')
+#o[o == 10] = 1 
+#o[o == 150] = 2
+#o[o == 250] = 3 
+#o = o[np.newaxis,:,:,:]
 
 class BrainFluids():
     def __init__(self, t1, t2):
@@ -110,9 +109,9 @@ class BrainFluids():
         self.wm_pred = (self.wm_pred > 0.20).astype('int')
         return self.wm_pred
 
-b = BrainFluids(t1, t2)
-b.loadModel()
-y = b.predict()
+#b = BrainFluids(t1, t2)
+#b.loadModel()
+#y = b.predict()
 
 #t1, _ = load('./sampleData/t1.mha')
 #t2, _ = load('./sampleData/t2.mha')

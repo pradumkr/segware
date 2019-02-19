@@ -12,10 +12,9 @@ from medpy.io import load
 
 class imagePlot(pg.ImageView):
     
-    def __init__(self, fileName):
-        if fileName:
-            dp_input, image_header = load(fileName)
-            self.data = np.asarray(dp_input)
+    def __init__(self, data):
+        if data.any():
+            self.data = data
         
             # Interpret image data as row-major instead of col-major
             pg.setConfigOptions(imageAxisOrder='col-major')
@@ -31,7 +30,7 @@ class imagePlot(pg.ImageView):
             slider.setMaximumHeight(60)
             roi.plotItem.setMenuEnabled(False)
             ## Display the data and assign each frame a time value from 1.0 to 3.0
-            self.imv.setImage(self.data, xvals=np.linspace(1, 144, self.data.shape[0], dtype = 'int32'))
+            self.imv.setImage(self.data, xvals=np.linspace(1,self.data.shape[0] , self.data.shape[0], dtype = 'int32'))
             ## Set a custom color map
             colors = [
                 (0, 0, 0),
