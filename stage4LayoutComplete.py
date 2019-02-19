@@ -62,10 +62,22 @@ class Window(QMainWindow):
                             triggered=self.widget.OpenRecentMRI))
         self.saveSegAct = QAction(self.style().standardIcon(getattr(QStyle, 'SP_DialogSaveButton')), 'Save segmented MRI', self, shortcut="Ctrl+S", statusTip="Save segmented MRIs", triggered=self.widget.SaveSegmentedMRI)
         self.saveMaskAct = QAction(QIcon("Images/saveMask.png"), 'Save mask', self, shortcut="Ctrl+Shift+M", statusTip="Save Mask of segmented MRIs", triggered=self.widget.SaveMask)
+<<<<<<< HEAD
+<<<<<<< HEAD
+#        self.resetAct = QAction(QIcon("Images/about.png"), 'Reset', self, shortcut="Ctrl+C", statusTip="Clear all data", triggered=self.toggleResultView)
+        self.exitAct = QAction(QIcon("Images/close2.png"), 'Exit', self, shortcut="Ctrl+Q", statusTip="Exit Application", triggered=self.CloseApp)
+        self.aboutAct = QAction(QIcon("Images/about.png"), 'About', self, shortcut="Ctrl+A", statusTip="About software", triggered=self.widget.AboutSoftware)
+=======
+=======
+>>>>>>> 013bb9c734a0d8a8bf4a2cdf3871392f941308ef
         self.resetAct = QAction(QIcon("Images/about.png"), 'Reset', self, shortcut="Ctrl+C", statusTip="Clear all data", triggered=self.toggleResultView)
         self.exitAct = QAction(QIcon("Images/close2.png"), 'Exit', self, shortcut="Ctrl+Q", statusTip="Exit Application", triggered=self.CloseApp)
         self.aboutAct = QAction(QIcon("Images/about.png"), 'About', self, shortcut="Ctrl+A", statusTip="About software", triggered=self.widget.AboutSoftware)
 #        flag = qta.icon('fa5.flag')
+<<<<<<< HEAD
+>>>>>>> 013bb9c734a0d8a8bf4a2cdf3871392f941308ef
+=======
+>>>>>>> 013bb9c734a0d8a8bf4a2cdf3871392f941308ef
         self.tutorialAct = QAction(self.style().standardIcon(getattr(QStyle, 'SP_MessageBoxQuestion')), 'Tutorial', self, statusTip="Demo Tutorial", triggered=self.widget.AboutSoftware)
 
         
@@ -87,7 +99,15 @@ class Window(QMainWindow):
         
         self.fileMenu.addAction(self.saveSegAct)
         self.fileMenu.addAction(self.saveMaskAct)
+<<<<<<< HEAD
+<<<<<<< HEAD
+#        self.fileMenu.addAction(self.resetAct)
+=======
         self.fileMenu.addAction(self.resetAct)
+>>>>>>> 013bb9c734a0d8a8bf4a2cdf3871392f941308ef
+=======
+        self.fileMenu.addAction(self.resetAct)
+>>>>>>> 013bb9c734a0d8a8bf4a2cdf3871392f941308ef
         self.fileMenu.addAction(self.exitAct)
         self.menuBar().addSeparator()
         self.helpMenu = self.mainMenu.addMenu("Help")
@@ -122,12 +142,21 @@ class Window(QMainWindow):
     def restart(self):
         qApp.exit(Window.EXIT_CODE_REBOOT)
         
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> 013bb9c734a0d8a8bf4a2cdf3871392f941308ef
 #    def set_Geometry(self):
 #        self.toggleResultView()
 #        self.widget.setMinimumSize(700,300)
 #        self.widget.controlLayout.resize(400,400)
 #        self.widget.mriView.resize(400,400)
         
+<<<<<<< HEAD
+>>>>>>> 013bb9c734a0d8a8bf4a2cdf3871392f941308ef
+=======
+>>>>>>> 013bb9c734a0d8a8bf4a2cdf3871392f941308ef
     
         
 class Layout(QWidget):
@@ -171,12 +200,56 @@ class Layout(QWidget):
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.layout.addWidget(self.scrollArea)
 #        self.setLayout(grid)
+<<<<<<< HEAD
+<<<<<<< HEAD
+        
+#    def segment(self):
+#        self.createMaskView(self.files['T1'])
+#        self.createSegmentedView(self.files['T1'])
+#        self.grid.addWidget(self.maskView, 1, 0)
+#        self.grid.addWidget(self.segmentedView, 1, 1)
+        
+    def t1View(self):
+        self.createMRIView(self.files['T1'])
+        if self.files['seg_output']:
+            self.createSegmentedView(self.files['seg_output']['T1'])
+        if self.files['mask_output']:
+            self.createMaskView(self.files['mask_output'])
+            
+    def t2View(self):
+        self.createMRIView(self.files['T2'])
+        if self.files['seg_output']:
+            self.createSegmentedView(self.files['seg_output']['T2'])
+        if self.files['mask_output']:
+            self.createMaskView(self.files['mask_output'])
+    
+    def t1cView(self):
+        self.createMRIView(self.files['T1c'])
+        if self.files['seg_output']:
+            self.createSegmentedView(self.files['seg_output']['T1c'])
+        if self.files['mask_output']:
+            self.createMaskView(self.files['mask_output'])
+    
+    def fView(self):
+        self.createMRIView(self.files['F'])
+        if self.files['seg_output']:
+            self.createSegmentedView(self.files['seg_output']['F'])
+        if self.files['mask_output']:
+            self.createMaskView(self.files['mask_output'])
+        
+=======
+=======
+>>>>>>> 013bb9c734a0d8a8bf4a2cdf3871392f941308ef
     def segment(self):
         self.createMaskView(self.files['T1'])
         self.createSegmentedView(self.files['T1'])
 #        self.grid.addWidget(self.maskView, 1, 0)
 #        self.grid.addWidget(self.segmentedView, 1, 1)
         
+<<<<<<< HEAD
+>>>>>>> 013bb9c734a0d8a8bf4a2cdf3871392f941308ef
+=======
+>>>>>>> 013bb9c734a0d8a8bf4a2cdf3871392f941308ef
     def createControlLayout(self):
         groupBox = QGroupBox("Controls")
         vBoxLayout = QVBoxLayout()
@@ -186,6 +259,24 @@ class Layout(QWidget):
         hboxModality.addWidget(modalityLabel)
         
         t1Btn = QRadioButton("T1",self)
+<<<<<<< HEAD
+<<<<<<< HEAD
+        t1Btn.clicked.connect(self.t1View)
+        hboxModality.addWidget(t1Btn)
+
+        t2Btn = QRadioButton("T2",self)
+        t2Btn.clicked.connect(self.t2View)
+        hboxModality.addWidget(t2Btn)
+        
+        t1cBtn = QRadioButton("T1c",self)
+        t1cBtn.clicked.connect(self.t1cView)
+        hboxModality.addWidget(t1cBtn)
+
+        flairBtn = QRadioButton("FLAIR",self)
+        flairBtn.clicked.connect(self.fView)
+=======
+=======
+>>>>>>> 013bb9c734a0d8a8bf4a2cdf3871392f941308ef
         hboxModality.addWidget(t1Btn)
 
         t2Btn = QRadioButton("T2",self)
@@ -195,6 +286,10 @@ class Layout(QWidget):
         hboxModality.addWidget(t1cBtn)
 
         flairBtn = QRadioButton("FLAIR",self)
+<<<<<<< HEAD
+>>>>>>> 013bb9c734a0d8a8bf4a2cdf3871392f941308ef
+=======
+>>>>>>> 013bb9c734a0d8a8bf4a2cdf3871392f941308ef
         hboxModality.addWidget(flairBtn)
         t1Btn.setChecked(True)
         
@@ -440,8 +535,29 @@ class Layout(QWidget):
         
     def style_choice(self, text):
         print(text)
+<<<<<<< HEAD
+<<<<<<< HEAD
+#        self.segment()
+        self.setMinimumSize(1000,800)
+        if text == "-Select-":
+            return
+        elif text == "Cerebrospinal Fluid (CSF)":
+            
+        elif text == "Gray Matter (GM)":
+            
+        else:
+            
+        self.createSegmentedView(self.files['seg_output'])
+        self.createMaskView(self.files['mask_output'])
+        
+=======
         self.segment()
         self.setMinimumSize(1000,800)
+>>>>>>> 013bb9c734a0d8a8bf4a2cdf3871392f941308ef
+=======
+        self.segment()
+        self.setMinimumSize(1000,800)
+>>>>>>> 013bb9c734a0d8a8bf4a2cdf3871392f941308ef
         
 
 #        'xMin', 'xMax', 'yMin', 'yMax', 'minXRange', 'maxXRange', 'minYRange', 'maxYRange'
