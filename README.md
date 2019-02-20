@@ -6,7 +6,7 @@
     conda install qtawesome
     pip install -r requirements.txt
 
-### To fix pyqtgrpah bug
+### To fix pyqtgraph bug
     open the environment in which you are working and write these command to get the directory where the pyqtgraph is installed
     import pyqtgraph
     print(pyqtgraph.graphicsItems.ImageItem.__file__)
