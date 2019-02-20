@@ -41,7 +41,7 @@ class Window(QMainWindow):
                 'T2': None,
                 'T1c': None,
                 'F': None,
-                'mask': {'csf': None, 'gm': None, 'wm': None, 'tumor': None},
+                'mask': None,
 #                'seg_output': {'csf': None, 'gm': None, 'wm': None, 'tumor': None}
                 }
         self.setWindowIcon(QtGui.QIcon("images/saveSegmentedMRI.jpg"))
@@ -272,7 +272,7 @@ class Layout(QWidget):
                 'T2': None,
                 'T1c': None,
                 'F': None,
-                'mask': {'csf': None, 'gm': None, 'wm': None, 'tumor': None},
+                'mask': None,
 #                'seg_output': {'csf': None, 'gm': None, 'wm': None, 'tumor': None}
                 }
 #    def segment(self):
@@ -283,42 +283,39 @@ class Layout(QWidget):
         
     def t1View(self):
         self.mriViewPlot.imv.setImage(self.curData['T1'], xvals=np.linspace(1,self.curData['T1'].shape[0] , self.curData['T1'].shape[0], dtype = 'int32'))
+        if self.maskViewPlot:
+            data = np.multiply(self.curData['T1'], self.curData['mask'])
+            self.maskViewPlot.imv.setImage(self.curData['mask'], xvals=np.linspace(1, self.curData['mask'].shape[0] , self.curData['mask'].shape[0], dtype = 'int32'))
+            self.segmentedViewPlot.imv.setImage(data, xvals=np.linspace(1, data.shape[0] , data.shape[0], dtype = 'int32'))
         self.setDimensionalityAndSlice()
-#        if self.segmentedView and self.files['seg_output']:
-#            self.createSegmentedView(self.files['seg_output']['T1'])
-#        if self.curData['tumor']:
-#            self.createMaskView(self.files['mask_output'])
             
     def t2View(self):
         self.mriViewPlot.imv.setImage(self.curData['T2'], xvals=np.linspace(1,self.curData['T2'].shape[0] , self.curData['T2'].shape[0], dtype = 'int32'))
+        if self.maskViewPlot:
+            data = np.multiply(self.curData['T2'], self.curData['mask'])
+            self.maskViewPlot.imv.setImage(self.curData['mask'], xvals=np.linspace(1, self.curData['mask'].shape[0] , self.curData['mask'].shape[0], dtype = 'int32'))
+            self.segmentedViewPlot.imv.setImage(data, xvals=np.linspace(1, data.shape[0] , data.shape[0], dtype = 'int32'))
         self.setDimensionalityAndSlice()
-#        if self.files['seg_output']:
-#            self.createSegmentedView(self.files['seg_output']['T2'])
-#        if self.files['mask_output']:
-#            self.createMaskView(self.files['mask_output'])
     
     def t1cView(self):
         self.mriViewPlot.imv.setImage(self.curData['T1c'], xvals=np.linspace(1,self.curData['T1c'].shape[0] , self.curData['T1c'].shape[0], dtype = 'int32'))
+        if self.maskViewPlot:
+            data = np.multiply(self.curData['T1c'], self.curData['mask'])
+            self.maskViewPlot.imv.setImage(self.curData['mask'], xvals=np.linspace(1, self.curData['mask'].shape[0] , self.curData['mask'].shape[0], dtype = 'int32'))
+            self.segmentedViewPlot.imv.setImage(data, xvals=np.linspace(1, data.shape[0] , data.shape[0], dtype = 'int32'))
         self.setDimensionalityAndSlice()
-#        if self.files['seg_output']:
-#            self.createSegmentedView(self.files['seg_output']['T1c'])
-#        if self.files['mask_output']:
-#            self.createMaskView(self.files['mask_output'])
     
     def fView(self):
         self.mriViewPlot.imv.setImage(self.curData['F'], xvals=np.linspace(1,self.curData['F'].shape[0] , self.curData['F'].shape[0], dtype = 'int32'))
+        if self.maskViewPlot:
+            data = np.multiply(self.curData['F'], self.curData['mask'])
+            self.maskViewPlot.imv.setImage(self.curData['mask'], xvals=np.linspace(1, self.curData['mask'].shape[0] , self.curData['mask'].shape[0], dtype = 'int32'))
+            self.segmentedViewPlot.imv.setImage(data, xvals=np.linspace(1, data.shape[0] , data.shape[0], dtype = 'int32'))
         self.setDimensionalityAndSlice()
-#        if self.files['seg_output']:
-#            self.createSegmentedView(self.files['seg_output']['F'])
-#        if self.files['mask_output']:
-#            self.createMaskView(self.files['mask_output'])
         
     def setDimensionalityAndSlice(self):
         self.dTransverse.setChecked(True)
-        self.mriViewPlot.setIndex(self.slider.value())
-        if self.maskViewPlot:
-            self.maskViewPlot.setIndex(self.slider.value())
-            self.segmentedViewPlot.setIndex(self.slider.value())
+        self.slider_value_changed()
         
     def createControlLayout(self):
         groupBox = QGroupBox("Controls")
@@ -408,6 +405,7 @@ class Layout(QWidget):
         if self.maskViewPlot:
             self.maskViewPlot.set_transverse()
             self.segmentedViewPlot.set_transverse()
+        self.slider_value_changed()
         
     def saggital_view(self):
         slices = self.mriViewPlot.set_saggital()
@@ -417,6 +415,7 @@ class Layout(QWidget):
         if self.maskViewPlot:
             self.maskViewPlot.set_saggital()
             self.segmentedViewPlot.set_saggital()
+        self.slider_value_changed()
     
     def coronal_view(self):
         slices = self.mriViewPlot.set_coronal()
@@ -426,6 +425,7 @@ class Layout(QWidget):
         if self.maskViewPlot:
             self.maskViewPlot.set_coronal()
             self.segmentedViewPlot.set_coronal()
+        self.slider_value_changed()
        
     def slider_value_changed(self):
 #        print(str(self.slider.value()))
@@ -488,9 +488,9 @@ class Layout(QWidget):
         
     def segmentChoice(self, text):
         print(text)
-        self.setMinimumSize(1000,800)
         if text == "Tumor":
             dialog = PopUpDLG(style=4)
+            self.setMinimumSize(1000,800)
             value = dialog.exec_()
             if value:
                 self.files = value
@@ -499,7 +499,6 @@ class Layout(QWidget):
                 self.curData['T1c'], _ = load(self.files['T1c'])
                 self.curData['F'], _ = load(self.files['F'])
                 self.createMRIView(self.curData['T1'])
-                sleep(3)
                 self.t1Btn.setChecked(True)
                 self.t1cBtn.setVisible(True)
                 self.flairBtn.setVisible(True)
@@ -507,11 +506,13 @@ class Layout(QWidget):
                 self.tumoreModel = Tumor(self.curData['T1'], self.curData['T2'], self.curData['T1c'], self.curData['F'])
                 self.tumoreModel.loadModel()
                 print("....predicting")
-                self.curData['mask']['tumor'] = self.tumoreModel.predict()[:,:,:,0]
-                self.curData['mask']['tumor'] = np.transpose(self.curData['mask']['tumor'],(1,2,0))
+                self.curData['mask'] = self.tumoreModel.predict()[:,:,:,0]
+                self.curData['mask'] = np.transpose(self.curData['mask'],(1,2,0))
                 print("...predicted")
-                self.createMaskView(self.curData['mask']['tumor'])
-                self.createSegmentedView(self.curData['mask']['tumor'])
+                data = np.multiply(self.curData['T1'], self.curData['mask'])
+                self.createMaskView(self.curData['mask'])
+                self.createSegmentedView(data)
+                self.setDimensionalityAndSlice()
         elif text == "--Select--":
             return
         else:
@@ -522,7 +523,6 @@ class Layout(QWidget):
                 self.curData['T1'], _ = load(self.files['T1'])
                 self.curData['T2'], _ = load(self.files['T2'])
                 self.createMRIView(self.curData['T1'])
-                sleep(3)
                 self.t1Btn.setChecked(True)
                 self.t1cBtn.setVisible(False)
                 self.flairBtn.setVisible(False)
@@ -532,26 +532,32 @@ class Layout(QWidget):
                     print("....predicting")
                     self.bfModel.loadModelAndPredictAll()
                     print("...predicted")
-                    self.curData['mask']['csf'] = self.bfModel.predictCSF()[0]
-                    print(self.curData['mask']['csf'].shape)
-                    self.createMaskView(self.curData['mask']['csf'])
-                    self.createSegmentedView(self.curData['mask']['csf'])
+                    self.curData['mask'] = self.bfModel.predictCSF()[0]
+                    print(self.curData['mask'].shape)
+                    self.createMaskView(self.curData['mask'])
+                    data = np.multiply(self.curData['T1'], self.curData['mask'])
+                    self.createSegmentedView(data)
+                    self.setDimensionalityAndSlice()
                 elif text == "Gray Matter (GM)":
                     self.bfModel = BrainFluids(self.curData['T1'], self.curData['T2'])
                     print("....predicting")
                     self.bfModel.loadModelAndPredictAll()
                     print("...predicted")
-                    self.curData['mask']['gm'] = self.bfModel.predictGM()[0]
-                    self.createMaskView(self.curData['mask']['gm'])
-                    self.createSegmentedView(self.curData['mask']['gm'])
+                    self.curData['mask'] = self.bfModel.predictGM()[0]
+                    self.createMaskView(self.curData['mask'])
+                    data = np.multiply(self.curData['T1'], self.curData['mask'])
+                    self.createSegmentedView(data)
+                    self.setDimensionalityAndSlice()
                 elif text == "White Matter (WM)":
                     self.bfModel = BrainFluids(self.curData['T1'], self.curData['T2'])
                     print("....predicting")
                     self.bfModel.loadModelAndPredictAll()
                     print("...predicted")
-                    self.curData['mask']['wm'] = self.bfModel.predictWM()[0]
-                    self.createMaskView(self.curData['mask']['wm'])
-                    self.createSegmentedView(self.curData['mask']['wm'])
+                    self.curData['mask'] = self.bfModel.predictWM()[0]
+                    self.createMaskView(self.curData['mask'])
+                    data = np.multiply(self.curData['T1'], self.curData['mask'])
+                    self.createSegmentedView(data)
+                    self.setDimensionalityAndSlice()
 #        self.createSegmentedView(self.files['seg_output'])
 #        self.createMaskView(self.files['mask_output'])
 

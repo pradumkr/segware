@@ -94,6 +94,7 @@ class BrainFluids():
             print("------"+ str(n) + "-----------")
         t1 = time()
         print(t1-t)
+#        return self.y_pred
         
     def predictCSF(self):
         self.csf_pred = self.y_pred[:,:,:,:,0]
@@ -114,11 +115,11 @@ class BrainFluids():
 #b.loadModel()
 #y = b.predict()
 
-#t1, _ = load('./sampleData/t1.mha')
-#t2, _ = load('./sampleData/t2.mha')
-#t1c, _ = load('./sampleData/t1c.mha')
-#f, _ = load('./sampleData/flair.mha')
-#o, _ = load('./sampleData/mask.mha')
+#t1, _ = load('./sampleData/Tumor/t1.mha')
+#t2, _ = load('./sampleData/Tumor/t2.mha')
+#t1c, _ = load('./sampleData/Tumor/t1c.mha')
+#f, _ = load('./sampleData/Tumor/flair.mha')
+#o, _ = load('./sampleData/Tumor/mask.mha')
         
 class Tumor():
     def __init__(self, t1, t2, t1c, f):
@@ -183,6 +184,11 @@ class Tumor():
         
     def predict(self):
         self.y_pred = self.model.predict(self.X , batch_size = 1, verbose = 0, steps = None)
+        self.y_pred = self.y_pred[:,8:248,8:248]
+        pad1 = np.zeros((11, 240,240,2))
+        pad2 = np.zeros((10, 240,240,2))
+        self.y_pred = np.concatenate((pad1, self.y_pred, pad2), axis=0)
+        self.y_pred = (self.y_pred > 0.7).astype(int)
         return self.y_pred
 
 #t = Tumor(t1, t2, t1c, f)
