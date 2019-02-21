@@ -12,7 +12,7 @@ from PyQt5.QtCore import QFile, QFileInfo, QSettings, Qt
 from PyQt5 import QtGui
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (QSpinBox, QSlider,QApplication, QMainWindow,QWidget, QAction, QMessageBox, QLabel, QRadioButton, 
-    QFileDialog, QGridLayout, QPushButton, QMenu, QGroupBox, QVBoxLayout, QHBoxLayout, QScrollArea)
+    QFileDialog, QGridLayout, QPushButton, QMenu, QGroupBox, QVBoxLayout, QHBoxLayout, QScrollArea, QMessageBox)
 import sys
 import qtawesome as qta
 from pyqtgraph.Qt import QtCore
@@ -43,6 +43,13 @@ class Window(QMainWindow):
                 'F': None,
                 'mask': None,
 #                'seg_output': {'csf': None, 'gm': None, 'wm': None, 'tumor': None}
+                }
+        self.dataAvail = {
+                'T1': None,
+                'T2': None,
+                'T1c': None,
+                'F': None,
+                'mask': None,
                 }
         self.setWindowIcon(QtGui.QIcon("images/saveSegmentedMRI.jpg"))
         
@@ -133,10 +140,26 @@ class Window(QMainWindow):
         if value:
             print(value)
             self.files = value
-            if self.files['T1']: self.curData['T1'], _ = load(self.files['T1'])
-            if self.files['T2']: self.curData['T2'], _ = load(self.files['T2'])
-            if self.files['T1c']: self.curData['T1c'], _ = load(self.files['T1c'])
-            if self.files['F']: self.curData['F'], _ = load(self.files['F'])
+            if self.files['T1']:
+                self.curData['T1'], _ = load(self.files['T1'])
+                self.dataAvail['T1'] = 1
+            else:
+                self.dataAvail['T1'] = None
+            if self.files['T2']:
+                self.curData['T2'], _ = load(self.files['T2'])
+                self.dataAvail['T2'] = 1
+            else:
+                self.dataAvail['T2'] = None
+            if self.files['T1c']:
+                self.curData['T1c'], _ = load(self.files['T1c'])
+                self.dataAvail['T1c'] = 1
+            else:
+                self.dataAvail['T1c'] = None
+            if self.files['F']:
+                self.curData['F'], _ = load(self.files['F'])
+                self.dataAvail['F'] = 1
+            else:
+                self.dataAvail['F'] = None
             self.widget.createMRIView(self.curData['T1'])
             self.widget.t1Btn.setChecked(True)
             self.widget.dTransverse.setChecked(True)
@@ -282,36 +305,60 @@ class Layout(QWidget):
 #        self.grid.addWidget(self.segmentedView, 1, 1)
         
     def t1View(self):
-        self.mriViewPlot.imv.setImage(self.curData['T1'], xvals=np.linspace(1,self.curData['T1'].shape[0] , self.curData['T1'].shape[0], dtype = 'int32'))
-        if self.maskViewPlot:
-            data = np.multiply(self.curData['T1'], self.curData['mask'])
-            self.maskViewPlot.imv.setImage(self.curData['mask'], xvals=np.linspace(1, self.curData['mask'].shape[0] , self.curData['mask'].shape[0], dtype = 'int32'))
-            self.segmentedViewPlot.imv.setImage(data, xvals=np.linspace(1, data.shape[0] , data.shape[0], dtype = 'int32'))
-        self.setDimensionalityAndSlice()
+        if w.dataAvail['T1']:
+            self.mriViewPlot.imv.setImage(self.curData['T1'], xvals=np.linspace(1,self.curData['T1'].shape[0] , self.curData['T1'].shape[0], dtype = 'int32'))
+            if self.maskViewPlot:
+                data = np.multiply(self.curData['T1'], self.curData['mask'])
+                self.maskViewPlot.imv.setImage(self.curData['mask'], xvals=np.linspace(1, self.curData['mask'].shape[0] , self.curData['mask'].shape[0], dtype = 'int32'))
+                self.segmentedViewPlot.imv.setImage(data, xvals=np.linspace(1, data.shape[0] , data.shape[0], dtype = 'int32'))
+            self.setDimensionalityAndSlice()
+            self.slider_value_changed(Window)
+        else :
+            self.warnMssg("T1")
             
     def t2View(self):
-        self.mriViewPlot.imv.setImage(self.curData['T2'], xvals=np.linspace(1,self.curData['T2'].shape[0] , self.curData['T2'].shape[0], dtype = 'int32'))
-        if self.maskViewPlot:
-            data = np.multiply(self.curData['T2'], self.curData['mask'])
-            self.maskViewPlot.imv.setImage(self.curData['mask'], xvals=np.linspace(1, self.curData['mask'].shape[0] , self.curData['mask'].shape[0], dtype = 'int32'))
-            self.segmentedViewPlot.imv.setImage(data, xvals=np.linspace(1, data.shape[0] , data.shape[0], dtype = 'int32'))
-        self.setDimensionalityAndSlice()
+        if w.dataAvail['T2']:
+            self.mriViewPlot.imv.setImage(self.curData['T2'], xvals=np.linspace(1,self.curData['T2'].shape[0] , self.curData['T2'].shape[0], dtype = 'int32'))
+            if self.maskViewPlot:
+                data = np.multiply(self.curData['T2'], self.curData['mask'])
+                self.maskViewPlot.imv.setImage(self.curData['mask'], xvals=np.linspace(1, self.curData['mask'].shape[0] , self.curData['mask'].shape[0], dtype = 'int32'))
+                self.segmentedViewPlot.imv.setImage(data, xvals=np.linspace(1, data.shape[0] , data.shape[0], dtype = 'int32'))
+            self.setDimensionalityAndSlice()
+            self.slider_value_changed()
+        else:
+            self.warnMssg("T2")
     
     def t1cView(self):
-        self.mriViewPlot.imv.setImage(self.curData['T1c'], xvals=np.linspace(1,self.curData['T1c'].shape[0] , self.curData['T1c'].shape[0], dtype = 'int32'))
-        if self.maskViewPlot:
-            data = np.multiply(self.curData['T1c'], self.curData['mask'])
-            self.maskViewPlot.imv.setImage(self.curData['mask'], xvals=np.linspace(1, self.curData['mask'].shape[0] , self.curData['mask'].shape[0], dtype = 'int32'))
-            self.segmentedViewPlot.imv.setImage(data, xvals=np.linspace(1, data.shape[0] , data.shape[0], dtype = 'int32'))
-        self.setDimensionalityAndSlice()
-    
+        if w.dataAvail['T1c']:
+            self.mriViewPlot.imv.setImage(self.curData['T1c'], xvals=np.linspace(1,self.curData['T1c'].shape[0] , self.curData['T1c'].shape[0], dtype = 'int32'))
+            if self.maskViewPlot:
+                data = np.multiply(self.curData['T1c'], self.curData['mask'])
+                self.maskViewPlot.imv.setImage(self.curData['mask'], xvals=np.linspace(1, self.curData['mask'].shape[0] , self.curData['mask'].shape[0], dtype = 'int32'))
+                self.segmentedViewPlot.imv.setImage(data, xvals=np.linspace(1, data.shape[0] , data.shape[0], dtype = 'int32'))
+            self.setDimensionalityAndSlice()
+            self.slider_value_changed()
+        else:
+            self.warnMssg("T1c")
+
     def fView(self):
-        self.mriViewPlot.imv.setImage(self.curData['F'], xvals=np.linspace(1,self.curData['F'].shape[0] , self.curData['F'].shape[0], dtype = 'int32'))
-        if self.maskViewPlot:
-            data = np.multiply(self.curData['F'], self.curData['mask'])
-            self.maskViewPlot.imv.setImage(self.curData['mask'], xvals=np.linspace(1, self.curData['mask'].shape[0] , self.curData['mask'].shape[0], dtype = 'int32'))
-            self.segmentedViewPlot.imv.setImage(data, xvals=np.linspace(1, data.shape[0] , data.shape[0], dtype = 'int32'))
-        self.setDimensionalityAndSlice()
+        if w.dataAvail['F']:
+            self.mriViewPlot.imv.setImage(self.curData['F'], xvals=np.linspace(1,self.curData['F'].shape[0] , self.curData['F'].shape[0], dtype = 'int32'))
+            if self.maskViewPlot:
+                data = np.multiply(self.curData['F'], self.curData['mask'])
+                self.maskViewPlot.imv.setImage(self.curData['mask'], xvals=np.linspace(1, self.curData['mask'].shape[0] , self.curData['mask'].shape[0], dtype = 'int32'))
+                self.segmentedViewPlot.imv.setImage(data, xvals=np.linspace(1, data.shape[0] , data.shape[0], dtype = 'int32'))
+            self.setDimensionalityAndSlice()
+            self.slider_value_changed()
+        else:
+            self.warnMssg("Flair")
+    
+    def warnMssg(self,fileType):
+        warn = QMessageBox()
+        warn.setIcon(QMessageBox.Information)
+        warn.setText(str(fileType)+"File is not loaded please provide"+str(fileType)+" image")
+        warn.setWindowTitle("Attention!!!")
+        warn.setStandardButtons(QMessageBox.Ok)
+        rat = warn.exec_()
         
     def setDimensionalityAndSlice(self):
         self.dTransverse.setChecked(True)
